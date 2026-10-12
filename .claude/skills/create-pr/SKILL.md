@@ -68,7 +68,7 @@ diff는 파일별로 나눠 읽는다(`git diff origin/<base>...origin/<head> --
 확인받으면 본문을 임시 파일(스크래치 디렉터리)에 쓰고 실행한다.
 
 ```bash
-gh pr create --base <base> --head <head> --title "<제목>" --body-file <임시 파일>
+gh pr create --base <base> --head <head> --title "<제목>" --body-file <임시 파일> --assignee @me
 ```
 
 PR 링크를 알려준다. 노션 할 일 DB(`collection://9fc082fa-db9c-4799-95b8-6eed9d06359c`)에 이 작업에 해당하는 할 일이 있으면, PR 속성에 링크를 넣을지 묻는다.
