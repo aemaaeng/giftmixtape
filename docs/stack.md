@@ -21,12 +21,12 @@ Next.js 16은 학습 데이터와 API가 다를 수 있다. Next.js 코드를 �
 
 ## 명령어
 
-| 명령                                | 내용           |
-| ----------------------------------- | -------------- |
-| `pnpm dev`                          | 개발 서버      |
-| `pnpm build`                        | 프로덕션 빌드  |
-| `pnpm lint`                         | ESLint         |
-| `pnpm format` / `pnpm format:check` | Prettier       |
-| `pnpm typecheck`                    | `tsc --noEmit` |
-| `pnpm test`                         | Vitest         |
-| `pnpm test:e2e`                     | Playwright     |
+| 명령                                | 내용                                               |
+| ----------------------------------- | -------------------------------------------------- |
+| `pnpm dev`                          | 개발 서버                                          |
+| `pnpm build`                        | 프로덕션 빌드                                      |
+| `pnpm lint`                         | ESLint                                             |
+| `pnpm format` / `pnpm format:check` | Prettier                                           |
+| `pnpm typecheck`                    | 라우트 타입 생성(`next typegen`) 후 `tsc --noEmit` |
+| `pnpm test`                         | Vitest                                             |
+| `pnpm test:e2e`                     | Playwright                                         |
