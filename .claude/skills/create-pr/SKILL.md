@@ -1,7 +1,7 @@
 ---
 name: create-pr
 description: 브랜치의 PR을 레포 템플릿에 맞춰 작성하고, 확인받은 뒤 gh로 생성한다. "PR 만들어줘", "PR 올려줘", "PR 본문 써줘" 등을 말할 때 사용.
-argument-hint: "[head 브랜치] [base 브랜치]"
+argument-hint: "[base 브랜치]"
 ---
 
 # create-pr
@@ -10,9 +10,8 @@ argument-hint: "[head 브랜치] [base 브랜치]"
 
 인자: `$ARGUMENTS`
 
-- 첫 번째 인자는 PR을 올릴 head 브랜치, 두 번째는 base 브랜치다.
-- head가 없으면 현재 브랜치, base가 없으면 `main`을 쓴다.
-- head가 현재 브랜치가 아니어도 체크아웃하지 않는다. 아래 명령은 `origin/<head>` 기준으로 읽는다.
+- 인자는 base 브랜치다. 없으면 `main`을 쓴다.
+- head 브랜치는 현재 브랜치다.
 
 ## 규칙
 
@@ -22,16 +21,19 @@ argument-hint: "[head 브랜치] [base 브랜치]"
 ## 1. 사전 확인
 
 ```bash
+git branch --show-current
+git status -sb
 git fetch origin
-git rev-parse --verify origin/<head>
-git rev-list --count origin/<head>..<head>
+git rev-parse --verify origin/<base>
 gh pr list --head <head> --state open
 ```
 
-- head와 base가 같으면 멈추고 알린다.
-- 원격에 head 브랜치가 없거나, 로컬 head에 push하지 않은 커밋이 있으면(위 count가 0보다 크면) 멈추고 push를 요청한다.
-- head가 현재 브랜치이고 커밋하지 않은 변경이 있으면 PR에 포함되지 않는다고 알린다.
+- head가 이상하면 멈추고 어떤 브랜치로 할지 묻는다. 예: detached HEAD라 브랜치 이름이 없을 때, head가 base와 같을 때, head가 `main`일 때.
+- base가 원격에 없으면 멈추고 알린다.
+- head가 원격에 없거나 로컬이 원격보다 앞서 있으면(`ahead`) 멈추고 push를 요청한다.
+- 커밋하지 않은 변경이 있으면 PR에 포함되지 않는다고 알린다.
 - 이미 열린 PR이 있으면 새로 만들지 않고 본문 수정 여부를 묻는다.
+- `gh`가 로그인돼 있지 않으면 사용자에게 `! gh auth login`을 요청한다.
 
 ## 2. 변경 파악
 
