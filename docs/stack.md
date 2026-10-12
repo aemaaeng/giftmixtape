@@ -9,7 +9,7 @@
 - 오디오: Web Audio API
 - 테스트: Vitest + Testing Library, Playwright
 - 린트·포맷: ESLint (eslint-config-next) + Prettier
-- 호스팅: Vercel (도메인 giftmixtape.com)
+- 호스팅: 미정 (도메인 giftmixtape.com)
 
 Next.js 16은 학습 데이터와 API가 다를 수 있다. Next.js 코드를 쓰기 전에 `AGENTS.md`의 안내대로 `node_modules/next/dist/docs/`를 확인한다.
 
