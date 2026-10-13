@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>스캔 목업</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,400..900&family=East+Sea+Dokdo&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <style>
+      :root {
+        --bed: #e7e3da;
+        --pen: #c0281f;
+        --ink: #1b1a19;
+        --paper: #f3eee2;
+        --col: min(460px, calc(100vw - 32px));
+        --hand: "East Sea Dokdo", cursive;
+        --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .2  0 0 0 0 .17  0 0 0 0 .12  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+        /* 종이 섬유: 가로로 길게 늘인 노이즈 */
+        --fibers: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.04 .9' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .7 -.38'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+        /* 플라스틱 결 */
+        --streaks: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='.003 .5' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -2.2 1.25'/></filter><rect width='100%' height='100%' filter='url(%23s)'/></svg>");
+        /* 인쇄 망점 */
+        --halftone: radial-gradient(circle, rgba(0, 0, 0, 0.22) 28%, transparent 31%) 0 0 / 3px 3px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(100deg, rgba(255, 255, 255, 0.55), transparent 35%, rgba(0, 0, 0, 0.04)),
+          var(--bed);
+        color: var(--ink);
+        font-family: "Pretendard Variable", system-ui, sans-serif;
+      }
+
+      /* 스캐너 노이즈 + 아주 옅은 세로 줄무늬 */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.012) 0 1px, transparent 1px 3px),
+          var(--noise);
+        background-size:
+          auto,
+          220px;
+        mix-blend-mode: multiply;
+        opacity: 0.6;
+        z-index: 20;
+      }
+
+      .bar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 16px;
+        background: rgba(231, 227, 218, 0.85);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      }
+
+      .seg {
+        display: inline-flex;
+        padding: 3px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.07);
+      }
+
+      .seg button {
+        border: 0;
+        background: transparent;
+        border-radius: 999px;
+        padding: 7px 12px;
+        font: 600 12.5px/1 "Pretendard Variable", sans-serif;
+        color: #6f675d;
+        cursor: pointer;
+      }
+
+      .seg button[aria-pressed="true"] {
+        background: #fbf8f2;
+        color: var(--ink);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+      }
+
+      .scan {
+        width: var(--col);
+        margin: 28px auto 24px;
+        display: grid;
+        gap: calc(var(--col) * 0.04);
+      }
+
+      .obj {
+        position: relative;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.28)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.12));
+      }
+
+      body.clean .wear,
+      body.clean .scratch,
+      body.clean .stain {
+        display: none;
+      }
+
+      .hand {
+        font-family: var(--hand);
+        color: var(--pen);
+        filter: url(#ink);
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .hand.black {
+        color: var(--ink);
+      }
+
+      /* ───────── 종이 공통 ───────── */
+
+      .paper {
+        background:
+          radial-gradient(ellipse at 85% 95%, rgba(170, 125, 55, 0.2), transparent 50%),
+          radial-gradient(ellipse at 5% 0%, rgba(170, 125, 55, 0.12), transparent 45%),
+          var(--paper);
+      }
+
+      /* 종이 위 질감 레이어: 섬유, 노이즈, 가장자리 변색 */
+      .wear {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          var(--fibers),
+          var(--noise);
+        background-size:
+          300px,
+          160px;
+        mix-blend-mode: multiply;
+        opacity: 0.55;
+        box-shadow:
+          inset 0 0 0 1px rgba(120, 85, 35, 0.18),
+          inset 0 0 16px rgba(150, 105, 40, 0.22);
+        z-index: 5;
+      }
+
+      /* 커피 자국 */
+      .stain {
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+        background: radial-gradient(
+          circle,
+          rgba(150, 100, 40, 0.06) 0 58%,
+          rgba(140, 90, 35, 0.2) 62%,
+          rgba(150, 100, 40, 0.05) 66%,
+          transparent 70%
+        );
+        mix-blend-mode: multiply;
+        z-index: 4;
+      }
+
+      /* ───────── 카세트 정면 ───────── */
+
+      .tape {
+        aspect-ratio: 100 / 63.6;
+        border-radius: 3.4% / 5.4%;
+        rotate: -0.6deg;
+        cursor: pointer;
+        container-type: inline-size;
+      }
+
+      .shell {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background:
+          var(--streaks),
+          radial-gradient(ellipse at 30% 10%, rgba(255, 255, 255, 0.1), transparent 55%),
+          linear-gradient(180deg, #2a2927, #1c1b1a 40%, #121110);
+        background-size: 400px, auto, auto;
+        background-blend-mode: soft-light, normal, normal;
+        box-shadow:
+          inset 0 0 0 1.5px rgba(255, 255, 255, 0.08),
+          inset 0 0 0 4px rgba(0, 0, 0, 0.3),
+          inset 0 0 0 5px rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+      }
+
+      /* 긁힘과 먼지 (JS가 랜덤으로 그린다) */
+      .scratch {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-size: 100% 100%;
+        mix-blend-mode: screen;
+        z-index: 6;
+      }
+
+      .screw {
+        position: absolute;
+        width: 3.4cqw;
+        aspect-ratio: 1;
+        translate: -50% -50%;
+        border-radius: 50%;
+        background:
+          linear-gradient(90deg, transparent 42%, rgba(0, 0, 0, 0.7) 43% 57%, transparent 58%),
+          linear-gradient(0deg, transparent 42%, rgba(0, 0, 0, 0.7) 43% 57%, transparent 58%),
+          radial-gradient(circle at 35% 30%, #8d8a85, #3d3b38 70%);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+      }
+
+      .label {
+        position: absolute;
+        left: 6%;
+        right: 6%;
+        top: 6.5%;
+        height: 64%;
+        border-radius: 1.2cqw;
+        overflow: hidden;
+        background: #1f1e1c;
+      }
+
+      .label-top {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 31%;
+        display: flex;
+        align-items: center;
+        gap: 3cqw;
+        padding: 0 3cqw;
+        --paper: #f1ece0;
+      }
+
+      .label-top::after {
+        content: "";
+        position: absolute;
+        left: 13cqw;
+        right: 3cqw;
+        bottom: 23%;
+        border-bottom: 1px solid #8f877b;
+      }
+
+      .side-box {
+        flex: none;
+        width: 6.6cqw;
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+        background: #5d2b47;
+        color: #f1ede4;
+        font: 700 5cqw/1 "Archivo", sans-serif;
+        font-stretch: 85%;
+        position: relative;
+        z-index: 1;
+      }
+
+      .label-top .hand {
+        position: relative;
+        font-size: 8cqw;
+        z-index: 6;
+        translate: 0 -6%;
+      }
+
+      .nr {
+        position: absolute;
+        right: 3cqw;
+        bottom: 5%;
+        font: 400 1.7cqw/1 "Archivo", sans-serif;
+        letter-spacing: 0.04em;
+        color: #4a4339;
+      }
+
+      .window {
+        position: absolute;
+        left: 35%;
+        width: 30%;
+        top: 37%;
+        height: 37%;
+        border-radius: 0.8cqw;
+        background: linear-gradient(90deg, #3a2a20, #5b4232 40%, #2b1f17 60%, #4a3527);
+        box-shadow: inset 0 0 0 0.5cqw #0e0d0c;
+        overflow: hidden;
+      }
+
+      .window::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.5) 46%, transparent 60%),
+          var(--noise);
+        background-size: auto, 120px;
+      }
+
+      .window i {
+        position: absolute;
+        top: 16%;
+        bottom: 16%;
+        width: 1px;
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      .hub {
+        position: absolute;
+        top: 54%;
+        width: 15cqw;
+        aspect-ratio: 1;
+        translate: -50% -50%;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle, #1a1918 0 30%, transparent 31%),
+          repeating-conic-gradient(#e9e6df 0 18deg, #1a1918 18deg 20deg, #e9e6df 20deg 60deg),
+          #e9e6df;
+        box-shadow:
+          0 0 0 0.6cqw #0e0d0c,
+          inset 0 0 0 2.2cqw #ebe7de,
+          inset 0 2px 4px rgba(0, 0, 0, 0.25);
+        animation: spin 2s linear infinite paused;
+      }
+
+      .tape.playing .hub {
+        animation-play-state: running;
+      }
+
+      @keyframes spin {
+        to {
+          rotate: -360deg;
+        }
+      }
+
+      .hub.l {
+        left: 23%;
+      }
+
+      .hub.r {
+        left: 77%;
+      }
+
+      .band {
+        position: absolute;
+        inset: auto 0 0;
+        height: 22%;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 50%),
+          linear-gradient(90deg, #d8c8a0, #e8dcbb 50%, #cdb98c);
+        display: flex;
+        align-items: center;
+        gap: 3cqw;
+        padding: 0 3cqw;
+        color: #2a241b;
+      }
+
+      .band::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--halftone);
+        mix-blend-mode: multiply;
+        opacity: 0.35;
+      }
+
+      .band .logo {
+        font: italic 900 4.4cqw/1 "Archivo", sans-serif;
+        font-stretch: 80%;
+        letter-spacing: -0.01em;
+        text-shadow: 0.5px 0.3px 0 rgba(150, 40, 30, 0.35);
+      }
+
+      .band .spec {
+        font: 500 1.9cqw/1 "Archivo", sans-serif;
+        flex: 1;
+        text-align: right;
+      }
+
+      .band .len {
+        font: 900 5.6cqw/1 "Archivo", sans-serif;
+        font-stretch: 75%;
+        color: #7a8a3a;
+        padding-left: 2cqw;
+      }
+
+      .guide {
+        position: absolute;
+        left: 18%;
+        width: 64%;
+        bottom: 0;
+        height: 21%;
+        clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
+        background:
+          radial-gradient(ellipse, #e2ded6 0 45%, transparent 50%) 12% 70% / 7% 34% no-repeat,
+          radial-gradient(ellipse, #e2ded6 0 45%, transparent 50%) 28% 52% / 7% 34% no-repeat,
+          radial-gradient(ellipse, #e2ded6 0 45%, transparent 50%) 72% 52% / 7% 34% no-repeat,
+          radial-gradient(ellipse, #e2ded6 0 45%, transparent 50%) 88% 70% / 7% 34% no-repeat,
+          radial-gradient(circle, #0d0c0b 0 40%, transparent 44%) 50% 30% / 5% 30% no-repeat,
+          linear-gradient(180deg, #252422, #161514);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+
+      /* ───────── J-card (펼친 상태: 커버 / 책등 / 안쪽) ───────── */
+
+      .jcard {
+        container-type: inline-size;
+        rotate: 0.45deg;
+        /* 모서리가 조금씩 닳고 찍힌 종이 */
+        clip-path: polygon(
+          0.4% 0.3%,
+          99.3% 0,
+          100% 0.6%,
+          99.8% 99.4%,
+          99.2% 100%,
+          0.6% 99.7%,
+          0 99%,
+          0.1% 0.8%
+        );
+      }
+
+      .jcard section {
+        position: relative;
+      }
+
+      /* 접힌 자국 */
+      .fold {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.85));
+        z-index: 6;
+      }
+
+      /* 커버 */
+      .cover {
+        height: 58cqw;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        padding: 5cqw 5cqw 4cqw;
+        overflow: hidden;
+      }
+
+      /* 오른쪽 위 3색 사선 띠 */
+      .cover .stripes {
+        position: absolute;
+        right: -18cqw;
+        top: -12cqw;
+        width: 58cqw;
+        height: 36cqw;
+        rotate: -28deg;
+        background: linear-gradient(
+          180deg,
+          #e6a33a 0 30%,
+          #dc6a2e 30% 62%,
+          var(--pen) 62% 100%
+        );
+        opacity: 0.94;
+      }
+
+      .cover .stripes::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--halftone);
+        mix-blend-mode: multiply;
+        opacity: 0.45;
+      }
+
+      .cover .brand {
+        position: relative;
+        font: italic 900 9cqw/0.9 "Archivo", sans-serif;
+        font-stretch: 78%;
+        letter-spacing: -0.01em;
+        color: #1d1b19;
+        /* 인쇄판이 살짝 어긋난 느낌 */
+        text-shadow: 0.8px 0.5px 0 rgba(0, 140, 170, 0.3);
+      }
+
+      .cover .brand small {
+        display: block;
+        margin-top: 2.2cqw;
+        font: 700 2cqw/1.3 "Space Mono", monospace;
+        font-style: normal;
+        letter-spacing: 0.14em;
+        color: #3b352d;
+        text-shadow: none;
+      }
+
+      .cover .for {
+        position: relative;
+        align-self: center;
+        justify-self: start;
+        padding-top: 4cqw;
+      }
+
+      .cover .for .hand {
+        font-size: 11cqw;
+        rotate: -4deg;
+        display: inline-block;
+      }
+
+      .cover .foot {
+        position: relative;
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        border-top: 1.5px solid #2a2622;
+        padding-top: 2cqw;
+      }
+
+      .cover .foot .spec {
+        font: 700 1.9cqw/1.5 "Space Mono", monospace;
+        letter-spacing: 0.1em;
+        color: #3b352d;
+      }
+
+      .cover .foot .len {
+        font: 900 15cqw/0.78 "Archivo", sans-serif;
+        font-stretch: 66%;
+        color: var(--pen);
+        text-shadow: -0.8px 0.4px 0 rgba(0, 140, 170, 0.25);
+      }
+
+      /* 책등 */
+      .spine {
+        height: 12cqw;
+        display: flex;
+        align-items: center;
+        gap: 4cqw;
+        padding-right: 4cqw;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      }
+
+      .spine .brand {
+        position: relative;
+        height: 100%;
+        width: 24cqw;
+        background: linear-gradient(100deg, var(--pen) 0 84%, transparent 84%);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding-left: 3cqw;
+        font: italic 900 3.2cqw/0.9 "Archivo", sans-serif;
+        font-stretch: 80%;
+      }
+
+      .spine .hand {
+        position: relative;
+        font-size: 7.5cqw;
+        color: var(--ink);
+        z-index: 6;
+      }
+
+      .spine .c {
+        margin-left: auto;
+        font: 900 4.4cqw/1 "Archivo", sans-serif;
+        font-stretch: 70%;
+      }
+
+      /* 안쪽: 곡 목록 */
+      .index {
+        padding: 3.5cqw 3cqw 4cqw;
+      }
+
+      .heads {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-bottom: 1.5px solid #3b352d;
+        padding-bottom: 2.4cqw;
+      }
+
+      .head {
+        display: flex;
+        gap: 2.4cqw;
+        align-items: center;
+        font: 500 2.1cqw/1.25 "Archivo", sans-serif;
+        letter-spacing: 0.02em;
+        color: #3b352d;
+      }
+
+      .head b {
+        display: grid;
+        place-items: center;
+        width: 4.8cqw;
+        aspect-ratio: 1;
+        background: #3b352d;
+        color: var(--paper);
+        font: 700 3.6cqw/1 "Archivo", sans-serif;
+      }
+
+      .cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        position: relative;
+      }
+
+      .cols::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        border-left: 1.5px dotted #8f877b;
+      }
+
+      .col {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .col li {
+        height: 8.4cqw;
+        border-bottom: 1px solid #c9c0b0;
+        display: flex;
+        align-items: end;
+        padding: 0 2cqw 0.8cqw 1cqw;
+        overflow: hidden;
+        position: relative;
+        z-index: 6;
+      }
+
+      .col li .hand {
+        font-size: 6.5cqw;
+      }
+
+      .col.b li .hand {
+        font-size: 5.8cqw;
+      }
+
+      .note {
+        width: var(--col);
+        margin: 0 auto 64px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #6f675d;
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <filter id="ink" x="-5%" y="-20%" width="110%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="7" />
+        <feDisplacementMap in="SourceGraphic" scale="1.6" />
+        <feGaussianBlur stdDeviation="0.25" />
+      </filter>
+    </svg>
+
+    <div class="bar">
+      <div class="seg" data-ink-picker>
+        <button data-ink="#c0281f" aria-pressed="true">빨간 펜</button>
+        <button data-ink="#1f3f9c">파란 펜</button>
+      </div>
+      <div class="seg" data-wear-picker>
+        <button data-wear="on" aria-pressed="true">질감 켜기</button>
+        <button data-wear="off">질감 끄기</button>
+      </div>
+    </div>
+
+    <main class="scan">
+      <div class="obj tape" data-tape>
+        <div class="shell">
+          <span class="screw" style="left: 3.2%; top: 5%"></span>
+          <span class="screw" style="left: 96.8%; top: 5%"></span>
+          <span class="screw" style="left: 3.2%; top: 95%"></span>
+          <span class="screw" style="left: 96.8%; top: 95%"></span>
+          <span class="screw" style="left: 50%; top: 86%"></span>
+          <div class="label">
+            <div class="label-top paper">
+              <span class="side-box">A</span>
+              <span class="hand">가을밤 드라이브</span>
+              <span class="nr">N.R.&nbsp;│&nbsp;☐IN&nbsp;☐OUT</span>
+              <span class="wear"></span>
+            </div>
+            <div class="window">
+              <i style="left: 30%"></i><i style="left: 45%"></i><i style="left: 60%"></i>
+            </div>
+            <span class="hub l"></span><span class="hub r"></span>
+            <div class="band">
+              <span class="logo">giftmixtape</span>
+              <span class="spec">Normal 70μs EQ</span>
+              <span class="len">C5</span>
+            </div>
+          </div>
+          <div class="guide"></div>
+          <span class="scratch" data-scratch></span>
+        </div>
+      </div>
+
+      <div class="obj jcard paper">
+        <section class="cover">
+          <span class="stripes"></span>
+          <div class="brand">
+            giftmixtape
+            <small>COMPACT CASSETTE · TYPE I (NORMAL)</small>
+          </div>
+          <div class="for"><span class="hand">for. 바다</span></div>
+          <div class="foot">
+            <span class="spec">NORMAL BIAS 120μs EQ<br />5 SONGS · 2 MIN 30 SEC</span>
+            <span class="len">C5</span>
+          </div>
+        </section>
+        <span class="fold" style="top: 58cqw"></span>
+        <section class="spine">
+          <span class="brand">gift<br />mixtape</span>
+          <span class="hand">가을밤 드라이브</span>
+          <span class="c">C5</span>
+        </section>
+        <span class="fold" style="top: 70cqw"></span>
+        <section class="index">
+          <div class="heads">
+            <div class="head"><b>A</b><span>DATE / TIME<br />NOISE REDUCTION ☐</span></div>
+            <div class="head"><b>B</b><span>DATE / TIME<br />NOISE REDUCTION ☐</span></div>
+          </div>
+          <div class="cols">
+            <ol class="col a" data-tracks></ol>
+            <ol class="col b">
+              <li><span class="hand black">to. 바다</span></li>
+              <li><span class="hand black">가을밤에 운전할 때</span></li>
+              <li><span class="hand black">들으려고 골랐어</span></li>
+              <li><span class="hand black">창문은 조금만 열기!</span></li>
+              <li><span class="hand black">from. 하늘</span></li>
+              <li></li>
+            </ol>
+          </div>
+        </section>
+        <span class="stain" style="width: 34cqw; height: 34cqw; right: -8cqw; top: 96cqw"></span>
+        <span class="wear"></span>
+      </div>
+    </main>
+    <p class="note">
+      J-card는 펼친 상태로 위에서부터 커버 → 책등 → 안쪽(곡 목록) 순서예요. 위쪽에서 질감을 껐다
+      켜면서 비교해 보세요. 카세트를 누르면 허브가 돌아요.
+    </p>
+
+    <script>
+      const TRACKS = [
+        "밤편지 - 아이유",
+        "사건의 지평선 - 윤하",
+        "Ditto - NewJeans",
+        "한 페이지가 될 수 있게",
+        "봄날 - BTS",
+      ];
+      const list = document.querySelector("[data-tracks]");
+      TRACKS.forEach((t, i) => {
+        list.insertAdjacentHTML("beforeend", `<li><span class="hand">${i + 1}. ${t}</span></li>`);
+      });
+      list.insertAdjacentHTML("beforeend", "<li></li>");
+
+      // 시드 고정 난수: 새로고침해도 긁힘 모양이 같다
+      const rng = (seed) => () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+
+      // 플라스틱 긁힘과 먼지를 SVG로 그린다
+      const scratchSvg = (seed) => {
+        const r = rng(seed);
+        let s = "";
+        for (let i = 0; i < 26; i++) {
+          const x = r() * 1000;
+          const y = r() * 636;
+          const len = 30 + r() * 220;
+          const a = (-20 + r() * 40) * (Math.PI / 180) + (r() < 0.3 ? Math.PI / 3 : 0);
+          const x2 = x + Math.cos(a) * len;
+          const y2 = y + Math.sin(a) * len;
+          const op = (0.05 + r() * 0.16).toFixed(2);
+          const w = (0.4 + r() * 1.1).toFixed(1);
+          s += `<line x1='${x.toFixed(0)}' y1='${y.toFixed(0)}' x2='${x2.toFixed(0)}' y2='${y2.toFixed(0)}' stroke='white' stroke-opacity='${op}' stroke-width='${w}' stroke-linecap='round'/>`;
+        }
+        for (let i = 0; i < 60; i++) {
+          const op = (0.08 + r() * 0.3).toFixed(2);
+          s += `<circle cx='${(r() * 1000).toFixed(0)}' cy='${(r() * 636).toFixed(0)}' r='${(0.6 + r() * 1.6).toFixed(1)}' fill='white' fill-opacity='${op}'/>`;
+        }
+        const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 636' preserveAspectRatio='none'>${s}</svg>`;
+        return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+      };
+      document.querySelector("[data-scratch]").style.backgroundImage = scratchSvg(42);
+
+      const tape = document.querySelector("[data-tape]");
+      tape.addEventListener("click", () => tape.classList.toggle("playing"));
+
+      const bindSeg = (sel, onPick) => {
+        const seg = document.querySelector(sel);
+        seg.addEventListener("click", (e) => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
+          seg
+            .querySelectorAll("button")
+            .forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+          onPick(btn);
+        });
+      };
+      bindSeg("[data-ink-picker]", (b) =>
+        document.documentElement.style.setProperty("--pen", b.dataset.ink),
+      );
+      bindSeg("[data-wear-picker]", (b) =>
+        document.body.classList.toggle("clean", b.dataset.wear === "off"),
+      );
+    </script>
+  </body>
+</html>

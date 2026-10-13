@@ -1,0 +1,1259 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>카세트 목업</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;700&family=Archivo:wght@800;900&family=IBM+Plex+Sans+KR:wght@400;600&family=Nanum+Pen+Script&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: #ece6dc;
+        --ink: #26221e;
+        --muted: #7b7268;
+        --line: #d6ccbe;
+        --w: min(360px, 78vw);
+        --h: calc(var(--w) * 0.636);
+        --d: calc(var(--w) * 0.11);
+        --r: calc(var(--w) * 0.032);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "IBM Plex Sans KR", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* 종이 질감 */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.45;
+        mix-blend-mode: multiply;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .25  0 0 0 0 .2  0 0 0 .35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+        z-index: 10;
+      }
+
+      .page {
+        overflow-x: clip;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 56px 24px 80px;
+      }
+
+      .intro {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        justify-content: space-between;
+        gap: 12px 32px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 20px;
+      }
+
+      .intro h1 {
+        margin: 0;
+        font-family: "Archivo", sans-serif;
+        font-weight: 900;
+        font-size: clamp(32px, 5vw, 52px);
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+
+      .intro h1 span {
+        font-family: "Nanum Pen Script", cursive;
+        font-weight: 400;
+        font-size: 0.9em;
+        color: #c4472d;
+        margin-left: 8px;
+      }
+
+      .intro p {
+        margin: 0;
+        max-width: 420px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .mockups {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+        gap: 40px 28px;
+        margin-top: 40px;
+      }
+
+      .mock {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .mock header {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 2px 12px;
+        align-items: baseline;
+      }
+
+      .mock .no {
+        font-family: "Space Mono", monospace;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .mock h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .mock header p {
+        grid-column: 2;
+        margin: 4px 0 0;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      .stage {
+        position: relative;
+        display: grid;
+        place-items: center;
+        height: calc(var(--w) * 1.08);
+        margin: 12px 0 8px;
+        perspective: 1100px;
+        perspective-origin: 50% 35%;
+        touch-action: manipulation;
+      }
+
+      .stage[data-pose="desk"] {
+        perspective-origin: 50% 10%;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 14px;
+        justify-content: space-between;
+      }
+
+      .swatches {
+        display: flex;
+        gap: 8px;
+      }
+
+      .swatch {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid var(--paper);
+        box-shadow: 0 0 0 1px var(--line);
+        background: var(--c);
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .swatch[aria-pressed="true"] {
+        box-shadow: 0 0 0 2px var(--ink);
+      }
+
+      .buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn {
+        font: 600 13px/1 "IBM Plex Sans KR", sans-serif;
+        color: var(--ink);
+        background: #f6f1e8;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 9px 14px;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background: #fff;
+      }
+
+      .btn[aria-pressed="true"] {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+
+      .progress {
+        width: 100%;
+        height: 2px;
+        margin-top: 14px;
+        background: var(--line);
+        overflow: hidden;
+      }
+
+      .progress i {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: var(--ink);
+        transform-origin: left;
+        scale: 0 1;
+      }
+
+      /* ───────── 카세트 공통 ───────── */
+
+      .cassette {
+        --shell: #1f1e1c;
+        --shell-side: #151413;
+        --hub: #f1ede4;
+        --label: #e9b44c;
+        position: relative;
+        width: var(--w);
+        height: var(--h);
+        transform-style: preserve-3d;
+        transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+        cursor: pointer;
+      }
+
+      .cassette.tracking {
+        transition: transform 0.12s linear;
+      }
+
+      .face {
+        position: absolute;
+      }
+
+      .front,
+      .back {
+        inset: 0;
+        border-radius: var(--r);
+        background: var(--shell);
+        overflow: hidden;
+      }
+
+      .front {
+        transform: translateZ(calc(var(--d) / 2));
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.18),
+          inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+      }
+
+      .back {
+        transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
+      }
+
+      .side-t,
+      .side-b {
+        left: calc(var(--r) * 0.6);
+        width: calc(var(--w) - var(--r) * 1.2);
+        height: var(--d);
+        top: calc(50% - var(--d) / 2);
+        background: var(--shell-side);
+      }
+
+      .side-t {
+        transform: rotateX(90deg) translateZ(calc(var(--h) / 2));
+        background-image: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.12),
+          transparent 40%,
+          rgba(0, 0, 0, 0.15)
+        );
+      }
+
+      /* 아래 면: 헤드가 들어가는 구멍들 */
+      .side-b {
+        transform: rotateX(-90deg) translateZ(calc(var(--h) / 2));
+        background:
+          linear-gradient(#0b0b0b, #0b0b0b) 50% 50% / 13% 58% no-repeat,
+          linear-gradient(#0b0b0b, #0b0b0b) 31% 50% / 6% 58% no-repeat,
+          linear-gradient(#0b0b0b, #0b0b0b) 69% 50% / 6% 58% no-repeat,
+          linear-gradient(#0b0b0b, #0b0b0b) 22% 50% / 3% 40% no-repeat,
+          linear-gradient(#0b0b0b, #0b0b0b) 78% 50% / 3% 40% no-repeat,
+          var(--shell-side);
+      }
+
+      .side-l,
+      .side-r {
+        width: var(--d);
+        height: calc(var(--h) - var(--r) * 1.2);
+        top: calc(var(--r) * 0.6);
+        left: calc(50% - var(--d) / 2);
+        background: var(--shell-side);
+        background-image: linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0.2),
+          rgba(255, 255, 255, 0.06) 50%,
+          rgba(0, 0, 0, 0.2)
+        );
+      }
+
+      .side-l {
+        transform: rotateY(-90deg) translateZ(calc(var(--w) / 2));
+      }
+
+      .side-r {
+        transform: rotateY(90deg) translateZ(calc(var(--w) / 2));
+      }
+
+      /* 바닥에 떨어지는 그림자 */
+      .cast {
+        position: absolute;
+        inset: 6% 4%;
+        border-radius: 12px;
+        background: rgba(40, 28, 16, 0.55);
+        filter: blur(22px);
+        transform: translateZ(calc(var(--d) * -0.5 - 24px));
+      }
+
+      .stage[data-pose="desk"] .cast {
+        inset: 2%;
+        background: rgba(40, 28, 16, 0.5);
+        filter: blur(14px);
+        transform: translateZ(calc(var(--d) * -0.5 - 2px)) translate(10px, 14px);
+      }
+
+      /* 창: 릴과 감긴 테이프가 보이는 곳 */
+      .window {
+        position: absolute;
+        left: 22%;
+        width: 56%;
+        top: 33%;
+        height: 21%;
+        border-radius: calc(var(--w) * 0.02);
+        background: #1a1715;
+        overflow: hidden;
+        box-shadow:
+          inset 0 2px 6px rgba(0, 0, 0, 0.6),
+          0 0 0 calc(var(--w) * 0.006) rgba(0, 0, 0, 0.35);
+        z-index: 2;
+      }
+
+      /* 창 유리의 반사광 */
+      .window::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          100deg,
+          transparent 20%,
+          rgba(255, 255, 255, 0.16) 32%,
+          transparent 44%,
+          transparent 70%,
+          rgba(255, 255, 255, 0.08) 78%,
+          transparent 84%
+        );
+        pointer-events: none;
+      }
+
+      /* 감긴 테이프 */
+      .pack {
+        position: absolute;
+        top: 50%;
+        aspect-ratio: 1;
+        width: 68%;
+        translate: -50% -50%;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle, transparent 0 30%, rgba(0, 0, 0, 0.25) 31%, transparent 34%),
+          conic-gradient(
+            from 210deg,
+            transparent 0deg,
+            rgba(255, 220, 190, 0.22) 25deg,
+            transparent 60deg,
+            transparent 180deg,
+            rgba(255, 220, 190, 0.12) 205deg,
+            transparent 240deg
+          ),
+          repeating-radial-gradient(circle, #3a2417 0 1px, #4d3223 1px 2.2px);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+        animation: unwind 30s linear forwards paused;
+      }
+
+      .pack.l {
+        left: 14.3%;
+      }
+
+      .pack.r {
+        left: 85.7%;
+        scale: 0.52;
+        animation-name: wind;
+      }
+
+      @keyframes unwind {
+        to {
+          scale: 0.52;
+        }
+      }
+
+      @keyframes wind {
+        to {
+          scale: 1;
+        }
+      }
+
+      /* 톱니 허브 */
+      .hub {
+        position: absolute;
+        top: 50%;
+        aspect-ratio: 1;
+        width: 21%;
+        translate: -50% -50%;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          transparent 0 56%,
+          var(--hub) 57% 69%,
+          rgba(0, 0, 0, 0.3) 70% 72%,
+          transparent 73%
+        );
+        animation: spin 1.8s linear infinite paused;
+      }
+
+      .hub::before {
+        content: "";
+        position: absolute;
+        inset: 14%;
+        border-radius: 50%;
+        background: repeating-conic-gradient(var(--hub) 0 15deg, transparent 15deg 60deg);
+        -webkit-mask: radial-gradient(circle, transparent 0 46%, #000 47%);
+        mask: radial-gradient(circle, transparent 0 46%, #000 47%);
+      }
+
+      .hub.l {
+        left: 14.3%;
+      }
+
+      .hub.r {
+        left: 85.7%;
+      }
+
+      @keyframes spin {
+        to {
+          rotate: -360deg;
+        }
+      }
+
+      .playing .hub,
+      .playing .pack {
+        animation-play-state: running;
+      }
+
+      /* 나사 */
+      .screw {
+        position: absolute;
+        width: calc(var(--w) * 0.03);
+        aspect-ratio: 1;
+        translate: -50% -50%;
+        border-radius: 50%;
+        background:
+          linear-gradient(45deg, transparent 44%, rgba(0, 0, 0, 0.55) 45% 55%, transparent 56%),
+          linear-gradient(-45deg, transparent 44%, rgba(0, 0, 0, 0.55) 45% 55%, transparent 56%),
+          radial-gradient(circle at 35% 30%, #f3f1ec, #9a978f 60%, #5d5b56);
+        box-shadow:
+          0 0 0 calc(var(--w) * 0.004) rgba(0, 0, 0, 0.35),
+          0 1px 1px rgba(255, 255, 255, 0.25);
+        z-index: 3;
+      }
+
+      .s1 {
+        left: 4%;
+        top: 6.5%;
+      }
+
+      .s2 {
+        left: 96%;
+        top: 6.5%;
+      }
+
+      .s3 {
+        left: 4%;
+        top: 93.5%;
+      }
+
+      .s4 {
+        left: 96%;
+        top: 93.5%;
+      }
+
+      .s5 {
+        left: 50%;
+        top: 88%;
+      }
+
+      /* 아래쪽 사다리꼴 */
+      .guide {
+        position: absolute;
+        left: 17%;
+        width: 66%;
+        bottom: 0;
+        height: 20%;
+        clip-path: polygon(7% 0, 93% 0, 100% 100%, 0 100%);
+        background:
+          radial-gradient(circle, #0b0b0b 0 38%, transparent 42%) 18% 62% / 7% 32% no-repeat,
+          radial-gradient(circle, #0b0b0b 0 38%, transparent 42%) 82% 62% / 7% 32% no-repeat,
+          linear-gradient(#0b0b0b, #0b0b0b) 36% 70% / 4.5% 30% no-repeat,
+          linear-gradient(#0b0b0b, #0b0b0b) 64% 70% / 4.5% 30% no-repeat,
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.12)),
+          var(--shell);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        z-index: 2;
+      }
+
+      .guide::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.35);
+      }
+
+      /* 마우스를 따라 움직이는 하이라이트 */
+      .gloss {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background:
+          radial-gradient(
+            circle at var(--gx, 30%) var(--gy, 15%),
+            rgba(255, 255, 255, 0.28),
+            transparent 42%
+          ),
+          linear-gradient(
+            125deg,
+            transparent 35%,
+            rgba(255, 255, 255, 0.07) 45%,
+            transparent 55%
+          );
+        mix-blend-mode: screen;
+        z-index: 5;
+      }
+
+      .back .label-b {
+        position: absolute;
+        inset: 7% 6% 30%;
+        border-radius: calc(var(--w) * 0.012);
+        background: #ece4d3;
+        display: grid;
+        place-items: center;
+        font: 700 calc(var(--w) * 0.14) / 1 "Archivo Narrow", sans-serif;
+        color: rgba(0, 0, 0, 0.75);
+      }
+
+      /* ───────── 01 투명 셸 + 마스킹테이프 ───────── */
+
+      .v-clear {
+        --shell: rgba(214, 222, 226, 0.26);
+        --shell-side: rgba(190, 200, 206, 0.42);
+        --hub: color-mix(in oklab, var(--label) 82%, #fff);
+      }
+
+      .v-clear .front {
+        background:
+          linear-gradient(160deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.05) 45%),
+          var(--shell);
+        backdrop-filter: blur(1.5px);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        box-shadow:
+          inset 0 0 0 calc(var(--w) * 0.018) rgba(255, 255, 255, 0.12),
+          inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+      }
+
+      .v-clear .back {
+        background: rgba(214, 222, 226, 0.18);
+      }
+
+      .v-clear .back .label-b {
+        display: none;
+      }
+
+      .v-clear .side-b {
+        background: var(--shell-side);
+      }
+
+      /* 투명이라 창 밖으로도 테이프가 다 보인다 */
+      .v-clear .window {
+        overflow: visible;
+        background: rgba(30, 30, 34, 0.12);
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.45),
+          0 0 0 calc(var(--w) * 0.012) rgba(255, 255, 255, 0.12);
+      }
+
+      .v-clear .pack {
+        width: 56%;
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, 0.5),
+          0 2px 6px rgba(0, 0, 0, 0.25);
+      }
+
+      .v-clear .guide {
+        background:
+          radial-gradient(circle, rgba(20, 20, 20, 0.55) 0 38%, transparent 42%) 18% 62% / 7% 32%
+            no-repeat,
+          radial-gradient(circle, rgba(20, 20, 20, 0.55) 0 38%, transparent 42%) 82% 62% / 7% 32%
+            no-repeat,
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.1));
+      }
+
+      /* 속이 비치는 부품: 롤러와 테이프 경로 */
+      .innards {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+      }
+
+      .innards i {
+        position: absolute;
+        width: calc(var(--w) * 0.045);
+        aspect-ratio: 1;
+        translate: -50% -50%;
+        border-radius: 50%;
+        background: radial-gradient(circle, #fff 0 25%, rgba(240, 240, 240, 0.85) 30% 100%);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+      }
+
+      .innards .strand {
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        top: 84%;
+        height: calc(var(--w) * 0.006);
+        background: #4d3223;
+        opacity: 0.85;
+      }
+
+      .masking {
+        position: absolute;
+        left: 12%;
+        right: 14%;
+        top: 9%;
+        height: 18%;
+        rotate: -2.2deg;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.12) 0 1px,
+            transparent 1px 3px
+          ),
+          linear-gradient(
+            to bottom,
+            color-mix(in oklab, var(--label) 30%, #f2e8cf),
+            color-mix(in oklab, var(--label) 22%, #e9dcbd)
+          );
+        opacity: 0.94;
+        clip-path: polygon(
+          1% 6%,
+          3% 0,
+          97% 3%,
+          99% 0,
+          98.5% 22%,
+          100% 41%,
+          98% 60%,
+          100% 79%,
+          98.5% 100%,
+          2% 96%,
+          0 78%,
+          1.5% 58%,
+          0 38%,
+          1.8% 20%
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6%;
+        font-family: "Nanum Pen Script", cursive;
+        font-size: calc(var(--w) * 0.085);
+        color: #1f2a44;
+        z-index: 4;
+      }
+
+      .masking small {
+        font-size: 0.6em;
+        opacity: 0.8;
+      }
+
+      .masking.second {
+        left: auto;
+        right: 7%;
+        top: 62%;
+        width: 24%;
+        height: 12%;
+        rotate: 6deg;
+        font-size: calc(var(--w) * 0.05);
+      }
+
+      .molded {
+        position: absolute;
+        font: 700 calc(var(--w) * 0.05) / 1 "Archivo Narrow", sans-serif;
+        color: rgba(255, 255, 255, 0.6);
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+        z-index: 2;
+      }
+
+      /* ───────── 02 컬러 셸 + 크림 라벨 ───────── */
+
+      .v-color {
+        --label: #2f4fa8;
+        --shell: var(--label);
+        --shell-side: color-mix(in oklab, var(--label) 70%, #000);
+        --hub: #f3efe6;
+      }
+
+      .v-color .front {
+        background:
+          linear-gradient(170deg, rgba(255, 255, 255, 0.12), transparent 40%),
+          repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.025) 0 1px, transparent 1px 3px),
+          var(--shell);
+      }
+
+      .v-color .back {
+        background: var(--shell);
+      }
+
+      .cream {
+        position: absolute;
+        left: 6.5%;
+        right: 6.5%;
+        top: 8%;
+        height: 64%;
+        border-radius: calc(var(--w) * 0.012);
+        background:
+          linear-gradient(170deg, rgba(255, 255, 255, 0.5), transparent 30%),
+          #efe4c9;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        z-index: 1;
+      }
+
+      /* 라벨 아래쪽 줄무늬 */
+      .cream::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 58%;
+        height: 15%;
+        background: linear-gradient(
+          to bottom,
+          var(--label) 0 22%,
+          transparent 22% 39%,
+          var(--label) 39% 61%,
+          transparent 61% 78%,
+          var(--label) 78% 100%
+        );
+        opacity: 0.92;
+      }
+
+      .cream .side {
+        position: absolute;
+        left: 4%;
+        top: 9%;
+        font: 700 calc(var(--w) * 0.024) / 1 "Archivo Narrow", sans-serif;
+        letter-spacing: 0.08em;
+        color: #3a342c;
+        text-align: center;
+      }
+
+      .cream .side b {
+        display: block;
+        font-size: 2.6em;
+        line-height: 1;
+      }
+
+      .cream .title {
+        position: absolute;
+        left: 15%;
+        right: 6%;
+        top: 7%;
+        font-family: "Nanum Pen Script", cursive;
+        font-size: calc(var(--w) * 0.088);
+        line-height: 0.95;
+        color: #1c2d6b;
+        rotate: -4deg;
+        transform-origin: left;
+      }
+
+      .cream .note {
+        position: absolute;
+        left: 4%;
+        bottom: 5%;
+        font: 400 calc(var(--w) * 0.026) / 1.3 "Space Mono", monospace;
+        color: #3a342c;
+      }
+
+      .cream .mins {
+        position: absolute;
+        right: 4%;
+        bottom: 5%;
+        font: 700 calc(var(--w) * 0.075) / 0.9 "Archivo Narrow", sans-serif;
+        color: #2a2520;
+        text-align: right;
+      }
+
+      .cream .mins small {
+        display: block;
+        font-size: 0.3em;
+        letter-spacing: 0.12em;
+      }
+
+      .v-color .window {
+        top: 36%;
+      }
+
+      /* 바닥에 풀려 있는 테이프 */
+      .ribbon {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: calc(var(--w) * 1.05);
+        translate: -54% 0;
+        pointer-events: none;
+        opacity: 0.9;
+      }
+
+      /* ───────── 03 블랙 셸 + 인쇄 라벨 ───────── */
+
+      .v-print {
+        --shell: #1c1b1a;
+        --shell-side: #121110;
+        --hub: #e9e6df;
+        --label: #d9573b;
+      }
+
+      .v-print .front {
+        background:
+          radial-gradient(circle at 50% 120%, rgba(255, 255, 255, 0.05), transparent 60%),
+          repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 2px),
+          var(--shell);
+      }
+
+      .printed {
+        position: absolute;
+        left: 6%;
+        right: 6%;
+        top: 8%;
+        height: 66%;
+        border-radius: calc(var(--w) * 0.01);
+        background: #f1ece2;
+        overflow: hidden;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 27% 1fr;
+      }
+
+      .printed .band {
+        background: var(--label);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 9% 10%;
+        color: #fff;
+      }
+
+      .printed .band::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 9%;
+        background: repeating-linear-gradient(
+          to bottom,
+          color-mix(in oklab, var(--label) 60%, #000) 0 3px,
+          transparent 3px 6px
+        );
+        opacity: 0.6;
+      }
+
+      .printed .brand {
+        font: 900 calc(var(--w) * 0.062) / 0.88 "Archivo", sans-serif;
+        letter-spacing: -0.03em;
+      }
+
+      .printed .len {
+        font: 700 calc(var(--w) * 0.11) / 0.8 "Archivo Narrow", sans-serif;
+      }
+
+      .printed .body {
+        position: relative;
+        padding: 5% 6% 0;
+      }
+
+      .printed .hand {
+        --lh: calc(var(--w) * 0.062);
+        font-family: "Nanum Pen Script", cursive;
+        font-size: calc(var(--w) * 0.064);
+        line-height: var(--lh);
+        color: #222;
+        background: repeating-linear-gradient(
+          to bottom,
+          transparent 0 calc(var(--lh) - 1px),
+          #b9ae9b calc(var(--lh) - 1px) var(--lh)
+        );
+      }
+
+      .printed .spec {
+        position: absolute;
+        left: 6%;
+        right: 6%;
+        bottom: 6%;
+        display: flex;
+        justify-content: space-between;
+        font: 400 calc(var(--w) * 0.022) / 1 "Space Mono", monospace;
+        letter-spacing: 0.04em;
+        color: #4a443b;
+        text-transform: uppercase;
+      }
+
+      .v-print .window {
+        left: 33%;
+        width: 50%;
+        top: 34%;
+        height: 22%;
+      }
+
+      .v-print .pack.l,
+      .v-print .hub.l {
+        left: 10%;
+      }
+
+      .v-print .pack.r,
+      .v-print .hub.r {
+        left: 90%;
+      }
+
+      .v-print .pack {
+        width: 72%;
+      }
+
+      .v-print .hub {
+        width: 23%;
+      }
+
+      /* 창 위 눈금 */
+      .v-print .window::before {
+        content: "";
+        position: absolute;
+        left: 30%;
+        right: 30%;
+        top: 0;
+        height: 100%;
+        background: repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.35) 0 1px,
+          transparent 1px 12.5%
+        );
+        -webkit-mask: linear-gradient(to bottom, #000 0 18%, transparent 18% 82%, #000 82%);
+        mask: linear-gradient(to bottom, #000 0 18%, transparent 18% 82%, #000 82%);
+        z-index: 1;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .cassette {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="intro">
+        <h1>Cassette mockups <span>3가지</span></h1>
+        <p>
+          마우스를 올리면 기울어지고, 테이프를 누르면 30초 미리듣기처럼 감겨요. 색을 바꿔 라벨
+          색 커스텀이 어떻게 보이는지도 확인해 보세요.
+        </p>
+      </section>
+
+      <div class="mockups">
+        <!-- 01 -->
+        <article class="mock" data-mock>
+          <header>
+            <span class="no">01</span>
+            <h2>투명 셸 + 마스킹테이프</h2>
+            <p>
+              속이 다 비치는 케이스에 마스킹테이프를 붙이고 펜으로 쓴 공테이프. 재생할 때 테이프가
+              감기는 게 전부 보여서 "녹음해서 건네는" 느낌이 가장 강해요.
+            </p>
+          </header>
+          <div class="stage" data-pose="desk">
+            <div class="cassette v-clear" style="--label: #e2786a">
+              <div class="face front">
+                <div class="innards">
+                  <span class="strand"></span>
+                  <i style="left: 9%; top: 80%"></i>
+                  <i style="left: 91%; top: 80%"></i>
+                </div>
+                <span class="molded" style="left: 6%; top: 32%">A</span>
+                <span class="molded" style="right: 6%; top: 32%">60</span>
+                <div class="masking">가을밤 드라이브 <small>side A</small></div>
+                <div class="masking second">to. 바다</div>
+                <div class="window" data-reels></div>
+                <div class="guide"></div>
+                <span class="screw s1"></span><span class="screw s2"></span
+                ><span class="screw s3"></span><span class="screw s4"></span
+                ><span class="screw s5"></span>
+                <div class="gloss"></div>
+              </div>
+            </div>
+          </div>
+          <div class="controls">
+            <div class="swatches" data-swatches="#e2786a #e9b44c #8fb8a8 #7c8fd6 #d6d0c4"></div>
+            <div class="buttons">
+              <button class="btn" data-play>▶ 재생</button>
+              <button class="btn" data-flip>B면</button>
+            </div>
+          </div>
+          <div class="progress"><i></i></div>
+        </article>
+
+        <!-- 02 -->
+        <article class="mock" data-mock>
+          <header>
+            <span class="no">02</span>
+            <h2>컬러 셸 + 크림 라벨</h2>
+            <p>
+              셸 전체가 라벨 색이 되는 버전. 크림 라벨에 손글씨, 아래 줄무늬로 레트로 인쇄 느낌.
+              색이 화면을 가장 넓게 차지해서 커버 색 추출과 잘 맞아요.
+            </p>
+          </header>
+          <div class="stage" data-pose="upright">
+            <svg class="ribbon" viewBox="0 0 400 130" aria-hidden="true">
+              <defs>
+                <linearGradient id="tape" x1="0" x2="1">
+                  <stop offset="0" stop-color="#2a1b12" />
+                  <stop offset=".45" stop-color="#5a3a26" />
+                  <stop offset=".55" stop-color="#2a1b12" />
+                  <stop offset="1" stop-color="#4a2f1f" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M150 6 C 140 40, 70 40, 62 74 C 54 108, 120 122, 158 100 C 196 78, 170 46, 214 50 C 258 54, 236 104, 286 108 C 330 112, 352 86, 372 98"
+                fill="none"
+                stroke="url(#tape)"
+                stroke-width="7"
+                stroke-linecap="butt"
+              />
+              <path
+                d="M150 6 C 140 40, 70 40, 62 74 C 54 108, 120 122, 158 100 C 196 78, 170 46, 214 50 C 258 54, 236 104, 286 108 C 330 112, 352 86, 372 98"
+                fill="none"
+                stroke="rgba(255,230,200,.28)"
+                stroke-width="1.2"
+                transform="translate(-1.5 -1.5)"
+              />
+            </svg>
+            <div class="cassette v-color" style="--label: #2f4fa8">
+              <div class="face front">
+                <div class="cream">
+                  <div class="side">SIDE<b>A</b></div>
+                  <div class="title">가을밤 드라이브,<br />창문은 조금만</div>
+                  <div class="note">from. 하늘<br />to. 바다</div>
+                  <div class="mins">60<small>MINUTES</small></div>
+                </div>
+                <div class="window" data-reels></div>
+                <div class="guide"></div>
+                <span class="screw s1"></span><span class="screw s2"></span
+                ><span class="screw s3"></span><span class="screw s4"></span
+                ><span class="screw s5"></span>
+                <div class="gloss"></div>
+              </div>
+            </div>
+          </div>
+          <div class="controls">
+            <div class="swatches" data-swatches="#2f4fa8 #c9452e #3e7a5a #e0a33a #c86b98"></div>
+            <div class="buttons">
+              <button class="btn" data-play>▶ 재생</button>
+              <button class="btn" data-flip>B면</button>
+            </div>
+          </div>
+          <div class="progress"><i></i></div>
+        </article>
+
+        <!-- 03 -->
+        <article class="mock" data-mock>
+          <header>
+            <span class="no">03</span>
+            <h2>블랙 셸 + 인쇄 라벨</h2>
+            <p>
+              80년대 BASF·SONY 같은 인쇄 라벨. 굵은 숫자와 컬러 밴드로 그래픽이 강하고, 손글씨는
+              줄 위에만. 가장 "제품"처럼 보이고 OG 이미지로 썼을 때 멀리서도 잘 읽혀요.
+            </p>
+          </header>
+          <div class="stage" data-pose="upright">
+            <div class="cassette v-print" style="--label: #d9573b">
+              <div class="face front">
+                <div class="printed">
+                  <div class="band">
+                    <span class="brand">MIX<br />TAPE</span>
+                    <span class="len">C5</span>
+                  </div>
+                  <div class="body">
+                                        <div class="hand">가을밤 드라이브<br />하늘 → 바다</div>
+                    <div class="spec"><span>Type I · Normal</span><span>5 songs</span></div>
+                  </div>
+                </div>
+                <div class="window" data-reels></div>
+                <div class="guide"></div>
+                <span class="screw s1"></span><span class="screw s2"></span
+                ><span class="screw s3"></span><span class="screw s4"></span
+                ><span class="screw s5"></span>
+                <div class="gloss"></div>
+              </div>
+            </div>
+          </div>
+          <div class="controls">
+            <div class="swatches" data-swatches="#d9573b #e8b13a #2f8f7a #3a5bd0 #f0ede6"></div>
+            <div class="buttons">
+              <button class="btn" data-play>▶ 재생</button>
+              <button class="btn" data-flip>B면</button>
+            </div>
+          </div>
+          <div class="progress"><i></i></div>
+        </article>
+      </div>
+    </main>
+
+    <script>
+      const POSES = {
+        upright: { rx: -8, ry: -20, rz: 0, range: 26 },
+        desk: { rx: 54, ry: 0, rz: -18, range: 14 },
+      };
+      const PREVIEW_MS = 30000;
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      for (const mock of document.querySelectorAll("[data-mock]")) {
+        const stage = mock.querySelector(".stage");
+        const cassette = mock.querySelector(".cassette");
+        const front = cassette.querySelector(".front");
+        const pose = POSES[stage.dataset.pose];
+        const playBtn = mock.querySelector("[data-play]");
+        const flipBtn = mock.querySelector("[data-flip]");
+        const bar = mock.querySelector(".progress i");
+
+        // 공통 면과 릴은 마크업 반복을 줄이려고 여기서 붙인다
+        cassette.insertAdjacentHTML(
+          "beforeend",
+          `<div class="face back"><div class="label-b">B</div></div>
+           <div class="face side-t"></div><div class="face side-b"></div>
+           <div class="face side-l"></div><div class="face side-r"></div>
+           <div class="cast"></div>`,
+        );
+        front
+          .querySelector("[data-reels]")
+          .insertAdjacentHTML(
+            "beforeend",
+            `<span class="pack l"></span><span class="pack r"></span>
+             <span class="hub l"></span><span class="hub r"></span>`,
+          );
+
+        let tilt = { x: 0, y: 0 };
+        let flipped = false;
+
+        const render = () => {
+          const ry = pose.ry + tilt.x * pose.range + (flipped ? 180 : 0);
+          const rx = pose.rx - tilt.y * pose.range * 0.7;
+          cassette.style.transform = `rotateX(${rx}deg) rotateZ(${pose.rz}deg) rotateY(${ry}deg)`;
+        };
+        render();
+
+        if (!reduceMotion) {
+          stage.addEventListener("pointermove", (e) => {
+            const rect = stage.getBoundingClientRect();
+            tilt = {
+              x: (e.clientX - rect.left) / rect.width - 0.5,
+              y: (e.clientY - rect.top) / rect.height - 0.5,
+            };
+            cassette.classList.add("tracking");
+            front.style.setProperty("--gx", `${(tilt.x + 0.5) * 100}%`);
+            front.style.setProperty("--gy", `${(tilt.y + 0.5) * 100}%`);
+            render();
+          });
+          stage.addEventListener("pointerleave", () => {
+            tilt = { x: 0, y: 0 };
+            cassette.classList.remove("tracking");
+            front.style.removeProperty("--gx");
+            front.style.removeProperty("--gy");
+            render();
+          });
+        }
+
+        // 30초 미리듣기 진행
+        let elapsed = 0;
+        let startedAt = 0;
+        let raf = 0;
+        const packs = cassette.querySelectorAll(".pack");
+
+        const tick = () => {
+          const t = Math.min(1, (elapsed + performance.now() - startedAt) / PREVIEW_MS);
+          bar.style.scale = `${t} 1`;
+          if (t >= 1) return stop(true);
+          raf = requestAnimationFrame(tick);
+        };
+        const start = () => {
+          if (elapsed >= PREVIEW_MS) {
+            elapsed = 0;
+            packs.forEach((p) => {
+              p.style.animation = "none";
+              p.offsetWidth;
+              p.style.animation = "";
+            });
+          }
+          startedAt = performance.now();
+          cassette.classList.add("playing");
+          playBtn.setAttribute("aria-pressed", "true");
+          playBtn.textContent = "❚❚ 정지";
+          raf = requestAnimationFrame(tick);
+        };
+        const stop = (ended = false) => {
+          elapsed = ended ? PREVIEW_MS : elapsed + performance.now() - startedAt;
+          cancelAnimationFrame(raf);
+          cassette.classList.remove("playing");
+          playBtn.setAttribute("aria-pressed", "false");
+          playBtn.textContent = ended ? "↺ 다시" : "▶ 재생";
+        };
+        const toggle = () => (cassette.classList.contains("playing") ? stop() : start());
+
+        playBtn.addEventListener("click", toggle);
+        cassette.addEventListener("click", toggle);
+        flipBtn.addEventListener("click", () => {
+          flipped = !flipped;
+          flipBtn.setAttribute("aria-pressed", String(flipped));
+          render();
+        });
+
+        // 라벨 색 바꾸기
+        const swatchBox = mock.querySelector("[data-swatches]");
+        const colors = swatchBox.dataset.swatches.split(" ");
+        for (const [i, c] of colors.entries()) {
+          const b = document.createElement("button");
+          b.className = "swatch";
+          b.style.setProperty("--c", c);
+          b.setAttribute("aria-label", `라벨 색 ${c}`);
+          b.setAttribute("aria-pressed", String(i === 0));
+          b.addEventListener("click", () => {
+            cassette.style.setProperty("--label", c);
+            swatchBox
+              .querySelectorAll(".swatch")
+              .forEach((s) => s.setAttribute("aria-pressed", String(s === b)));
+          });
+          swatchBox.append(b);
+        }
+      }
+    </script>
+  </body>
+</html>

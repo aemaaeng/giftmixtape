@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>워크맨 목업</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Gaegu:wght@400;700&family=Hi+Melody&family=Nanum+Gothic+Coding:wght@400;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      :root {
+        --w: min(290px, 60vw);
+        --pw: calc(var(--w) * 1.2);
+        --ph: calc(var(--w) * 1.12);
+        --pd: calc(var(--w) * 0.26);
+        --kh: calc(var(--pd) * 0.16);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+        gap: 24px 48px;
+        align-items: center;
+        margin-top: 24px;
+      }
+
+      @media (max-width: 860px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .p-stage {
+        position: relative;
+        display: grid;
+        place-items: center;
+        height: calc(var(--ph) * 1.95);
+        perspective: 1400px;
+        perspective-origin: 50% 20%;
+        touch-action: manipulation;
+      }
+
+      /* ───────── 워크맨 본체 ───────── */
+
+      .player {
+        --body: #c9ccd1;
+        --body-side: #a9adb3;
+        --trim: #d9573b;
+        position: relative;
+        width: var(--pw);
+        height: var(--ph);
+        margin-top: calc(var(--ph) * 0.8);
+        transform-style: preserve-3d;
+        transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      .player.tracking {
+        transition: transform 0.12s linear;
+      }
+
+      .player > .pf {
+        position: absolute;
+      }
+
+      .metal {
+        background:
+          repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.07) 0 1px,
+            rgba(0, 0, 0, 0.035) 1px 2px
+          ),
+          linear-gradient(
+            100deg,
+            #b9bdc3 0%,
+            #eef0f3 28%,
+            #c3c7cd 52%,
+            #e6e8eb 76%,
+            #b4b8be 100%
+          );
+      }
+
+      .player:not(.silver) .metal {
+        background:
+          linear-gradient(160deg, rgba(255, 255, 255, 0.22), transparent 40%),
+          repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.02) 0 1px, transparent 1px 3px),
+          var(--body);
+      }
+
+      /* 앞면: 문이 들어가는 자리를 뚫어 둔다 */
+      .p-front {
+        inset: 0;
+        border-radius: calc(var(--w) * 0.05);
+        transform: translateZ(calc(var(--pd) / 2));
+        -webkit-mask:
+          linear-gradient(#000 0 0) 0 0 / 100% 100% no-repeat,
+          linear-gradient(#000 0 0) 50% 13.4% / 90% 70% no-repeat;
+        -webkit-mask-composite: xor;
+        mask:
+          linear-gradient(#000 0 0) 0 0 / 100% 100% no-repeat,
+          linear-gradient(#000 0 0) 50% 13.4% / 90% 70% no-repeat;
+        mask-composite: exclude;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.6),
+          inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+      }
+
+      .p-back {
+        inset: 0;
+        border-radius: calc(var(--w) * 0.05);
+        transform: rotateY(180deg) translateZ(calc(var(--pd) / 2));
+        background: var(--body-side);
+      }
+
+      /* 테이프가 들어가는 칸의 안쪽 벽 */
+      .p-cavity {
+        left: 5%;
+        width: 90%;
+        top: 4%;
+        height: 70%;
+        border-radius: calc(var(--w) * 0.02);
+        background:
+          radial-gradient(circle at 50% 40%, #2c2c2f, #141416 70%),
+          #141416;
+        box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.8);
+        transform: translateZ(calc(var(--pd) / -2 + 2px));
+      }
+
+      .p-top,
+      .p-bottom {
+        left: calc(var(--w) * 0.03);
+        width: calc(var(--pw) - var(--w) * 0.06);
+        height: var(--pd);
+        top: calc(50% - var(--pd) / 2);
+        background: var(--body-side);
+        transform-style: preserve-3d;
+      }
+
+      .p-top {
+        transform: rotateX(90deg) translateZ(calc(var(--ph) / 2));
+        background-image: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.25),
+          rgba(0, 0, 0, 0.08)
+        );
+      }
+
+      .p-bottom {
+        transform: rotateX(-90deg) translateZ(calc(var(--ph) / 2));
+      }
+
+      .p-left,
+      .p-right {
+        width: var(--pd);
+        height: calc(var(--ph) - var(--w) * 0.06);
+        top: calc(var(--w) * 0.03);
+        left: calc(50% - var(--pd) / 2);
+        background: var(--body-side);
+        background-image: linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0.12),
+          rgba(255, 255, 255, 0.18) 50%,
+          rgba(0, 0, 0, 0.12)
+        );
+      }
+
+      .p-left {
+        transform: rotateY(-90deg) translateZ(calc(var(--pw) / 2));
+      }
+
+      .p-right {
+        transform: rotateY(90deg) translateZ(calc(var(--pw) / 2));
+      }
+
+      /* 볼륨 휠 */
+      .wheel {
+        position: absolute;
+        left: 18%;
+        right: 18%;
+        top: 12%;
+        height: 22%;
+        border-radius: 6px;
+        background:
+          linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.35),
+            transparent 30%,
+            transparent 70%,
+            rgba(0, 0, 0, 0.35)
+          ),
+          repeating-linear-gradient(to bottom, #3a3a3d 0 1.5px, #77787c 1.5px 3.5px);
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, 0.4),
+          0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .wheel-label {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 37%;
+        text-align: center;
+        font: 700 calc(var(--pd) * 0.13) / 1.4 "Space Mono", monospace;
+        color: rgba(0, 0, 0, 0.55);
+        letter-spacing: 0.1em;
+      }
+
+      .p-cast {
+        inset: 4% 3%;
+        border-radius: 24px;
+        background: rgba(40, 28, 16, 0.5);
+        filter: blur(28px);
+        transform: translateZ(calc(var(--pd) * -0.5 - 30px));
+      }
+
+      /* ───────── 문 ───────── */
+
+      .door {
+        left: 5%;
+        width: 90%;
+        top: 4%;
+        height: 70%;
+        border-radius: calc(var(--w) * 0.03);
+        transform-origin: 50% 100%;
+        transform: translateZ(calc(var(--pd) / 2 + 1px)) rotateX(var(--open, 0deg));
+        transition: transform 0.55s cubic-bezier(0.3, 0.7, 0.2, 1);
+        -webkit-mask:
+          linear-gradient(#000 0 0) 0 0 / 100% 100% no-repeat,
+          linear-gradient(#000 0 0) 50% 50% / 84% 76% no-repeat;
+        -webkit-mask-composite: xor;
+        mask:
+          linear-gradient(#000 0 0) 0 0 / 100% 100% no-repeat,
+          linear-gradient(#000 0 0) 50% 50% / 84% 76% no-repeat;
+        mask-composite: exclude;
+        box-shadow:
+          inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+          inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      }
+
+      .glass {
+        left: calc(5% + 90% * 0.08);
+        width: calc(90% * 0.84);
+        top: calc(4% + 70% * 0.12);
+        height: calc(70% * 0.76);
+        border-radius: calc(var(--w) * 0.015);
+        transform-origin: 50% calc(100% + var(--ph) * 0.7 * 0.12);
+        transform: translateZ(calc(var(--pd) / 2 + 1px)) rotateX(var(--open, 0deg));
+        transition: transform 0.55s cubic-bezier(0.3, 0.7, 0.2, 1);
+        background:
+          linear-gradient(
+            115deg,
+            transparent 10%,
+            rgba(255, 255, 255, 0.28) 22%,
+            transparent 34%,
+            transparent 62%,
+            rgba(255, 255, 255, 0.12) 70%,
+            transparent 78%
+          ),
+          rgba(120, 140, 160, 0.12);
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+          inset 0 0 18px rgba(0, 0, 0, 0.25);
+        pointer-events: none;
+      }
+
+      .door-print {
+        left: 5%;
+        width: 90%;
+        top: 4%;
+        height: 70%;
+        transform-origin: 50% 100%;
+        transform: translateZ(calc(var(--pd) / 2 + 1.5px)) rotateX(var(--open, 0deg));
+        transition: transform 0.55s cubic-bezier(0.3, 0.7, 0.2, 1);
+        pointer-events: none;
+        font: 700 calc(var(--w) * 0.026) / 1 "Space Mono", monospace;
+        letter-spacing: 0.14em;
+        color: rgba(0, 0, 0, 0.55);
+      }
+
+      .player:not(.silver) .door-print {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .door-print span {
+        position: absolute;
+        top: 4.5%;
+      }
+
+      .door-print .l {
+        left: 8%;
+      }
+
+      .door-print .r {
+        right: 8%;
+      }
+
+      /* ───────── 아래 패널 ───────── */
+
+      .panel {
+        position: absolute;
+        left: 6%;
+        right: 6%;
+        bottom: 6%;
+        height: 18%;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+      }
+
+      .panel::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -10%;
+        height: 6%;
+        min-height: 3px;
+        background: linear-gradient(
+          to bottom,
+          var(--trim) 0 40%,
+          transparent 40% 60%,
+          color-mix(in oklab, var(--trim) 50%, #fff) 60%
+        );
+      }
+
+      .logo {
+        font: 900 calc(var(--w) * 0.08) / 0.9 "Archivo", sans-serif;
+        font-stretch: 70%;
+        letter-spacing: -0.01em;
+        color: #1d1d1f;
+        font-style: italic;
+      }
+
+      .player:not(.silver) .logo,
+      .player:not(.silver) .sub,
+      .player:not(.silver) .led-label {
+        color: #f6f3ec;
+      }
+
+      .sub {
+        display: block;
+        margin-top: 4px;
+        font: 700 calc(var(--w) * 0.02) / 1 "Space Mono", monospace;
+        letter-spacing: 0.16em;
+        font-style: normal;
+        color: rgba(0, 0, 0, 0.6);
+      }
+
+      .led-wrap {
+        display: grid;
+        justify-items: center;
+        gap: 4px;
+      }
+
+      .led {
+        width: calc(var(--w) * 0.03);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #6b1d16, #2a0a07);
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+        transition: background 0.2s;
+      }
+
+      .player.on .led {
+        background: radial-gradient(circle at 35% 30%, #ffb3a0, #ff3b1f 50%, #a3150a);
+        box-shadow:
+          0 0 8px 2px rgba(255, 70, 40, 0.65),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+      }
+
+      .led-label {
+        font: 700 calc(var(--w) * 0.018) / 1 "Space Mono", monospace;
+        letter-spacing: 0.12em;
+        color: rgba(0, 0, 0, 0.55);
+      }
+
+      /* ───────── 윗면 버튼 ───────── */
+
+      .keys {
+        position: absolute;
+        left: 7%;
+        width: 64%;
+        top: 22%;
+        height: 56%;
+        display: flex;
+        gap: 4%;
+        transform-style: preserve-3d;
+      }
+
+      .key {
+        position: relative;
+        flex: 1;
+        transform-style: preserve-3d;
+        transition: transform 0.12s;
+        cursor: pointer;
+      }
+
+      .key .k-top,
+      .key .k-front {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        background: #2d2d31;
+      }
+
+      .key .k-top {
+        top: 0;
+        height: 100%;
+        border-radius: 2px;
+        transform: translateZ(var(--kh));
+        display: grid;
+        place-items: center;
+        color: #e9e6df;
+        font: 700 calc(var(--pd) * 0.2) / 1 "Pretendard Variable", sans-serif;
+        background: linear-gradient(to bottom, #3e3e43, #232326);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      }
+
+      .key .k-front {
+        top: 100%;
+        height: var(--kh);
+        transform-origin: top;
+        transform: translateZ(var(--kh)) rotateX(-90deg);
+        background: #161618;
+      }
+
+      .key.play .k-top {
+        background: linear-gradient(to bottom, color-mix(in oklab, var(--trim) 90%, #fff), var(--trim));
+        color: #fff;
+      }
+
+      .key.play .k-front {
+        background: color-mix(in oklab, var(--trim) 60%, #000);
+      }
+
+      .key.down {
+        transform: translateZ(calc(var(--kh) * -0.75));
+      }
+
+      .jack {
+        position: absolute;
+        right: 9%;
+        top: 30%;
+        width: calc(var(--pd) * 0.28);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: radial-gradient(circle, #050505 0 38%, #8d9096 42% 62%, #5b5e63 66%);
+      }
+
+      .jack-label {
+        position: absolute;
+        right: 5%;
+        bottom: 10%;
+        font: 700 calc(var(--pd) * 0.1) / 1 "Space Mono", monospace;
+        letter-spacing: 0.1em;
+        color: rgba(0, 0, 0, 0.5);
+      }
+
+      /* ───────── 안에 들어가는 테이프 ───────── */
+
+      .slot {
+        position: absolute;
+        left: calc((var(--pw) - var(--w)) / 2);
+        top: calc(var(--ph) * 0.04 + (var(--ph) * 0.7 - var(--h)) / 2);
+        width: var(--w);
+        height: var(--h);
+        transform-style: preserve-3d;
+        transform: translate3d(0, calc(var(--ph) * -0.9), calc(var(--pd) * 0.9)) rotateX(10deg)
+          rotateZ(-4deg);
+        transition: transform 0.75s cubic-bezier(0.3, 0.7, 0.2, 1);
+      }
+
+      .player.loaded .slot {
+        transform: translateZ(calc(var(--pd) / 2 - var(--d) / 2 - 4px));
+      }
+
+      .slot .cassette {
+        transition: none;
+        cursor: default;
+      }
+
+      .slot .cast {
+        display: none;
+      }
+
+      .player .pack {
+        animation: none;
+      }
+
+      /* ───────── 오른쪽 정보 ───────── */
+
+      .info h2 {
+        margin: 0 0 4px;
+        font-size: 22px;
+        letter-spacing: -0.01em;
+      }
+
+      .info .from {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .tracks {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .tracks li {
+        display: grid;
+        grid-template-columns: 24px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 11px 4px;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .tracks li .n {
+        font: 700 11px/1 "Space Mono", monospace;
+        color: var(--muted);
+      }
+
+      .tracks li small {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .tracks li time {
+        font: 400 12px/1 "Space Mono", monospace;
+        color: var(--muted);
+      }
+
+      .tracks li.current {
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      .tracks li.current .n {
+        color: var(--trim, #d9573b);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .opts {
+        display: grid;
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      .status {
+        margin-top: 14px;
+        font: 400 12px/1.5 "Space Mono", monospace;
+        color: var(--muted);
+        min-height: 18px;
+      }
+    </style>
+  </head>
+  <body data-hand="pen">
+    <main class="page">
+      <section class="intro">
+        <div class="intro-top">
+          <h1>Walkman <em>mock</em></h1>
+          <p>
+            받는 사람 화면을 상상한 목업이에요. 테이프를 넣으면 문이 열렸다 닫히고, 위쪽 버튼으로
+            재생·정지·다음 곡을 조작해요. 버튼은 실제로 눌려요.
+          </p>
+        </div>
+        <div class="picker">
+          <span>테이프</span>
+          <div class="seg" data-tape-picker>
+            <button data-tape="A" aria-pressed="true">A 컬러 셸</button>
+            <button data-tape="B">B 인쇄 라벨</button>
+            <button data-tape="C">C 견출지</button>
+          </div>
+          <span>글씨</span>
+          <div class="seg" data-hand-picker>
+            <button data-hand="pen" aria-pressed="true">펜</button>
+            <button data-hand="marker">마커</button>
+            <button data-hand="type">타자기</button>
+            <button data-hand="dymo">라벨 프린터</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="layout">
+        <div class="p-stage" data-stage>
+          <div class="player silver" data-player style="--trim: #d9573b">
+            <div class="pf p-cast"></div>
+            <div class="pf p-back"></div>
+            <div class="pf p-cavity"></div>
+            <div class="pf p-top metal">
+              <div class="keys">
+                <div class="key" data-key="rew" aria-label="이전 곡">
+                  <div class="k-top">◀◀</div>
+                  <div class="k-front"></div>
+                </div>
+                <div class="key play" data-key="play" aria-label="재생">
+                  <div class="k-top">▶</div>
+                  <div class="k-front"></div>
+                </div>
+                <div class="key" data-key="ff" aria-label="다음 곡">
+                  <div class="k-top">▶▶</div>
+                  <div class="k-front"></div>
+                </div>
+                <div class="key" data-key="stop" aria-label="정지 · 꺼내기">
+                  <div class="k-top">■⏏</div>
+                  <div class="k-front"></div>
+                </div>
+              </div>
+              <span class="jack"></span>
+              <span class="jack-label">PHONES</span>
+            </div>
+            <div class="pf p-bottom metal"></div>
+            <div class="pf p-left metal"></div>
+            <div class="pf p-right metal">
+              <div class="wheel"></div>
+              <div class="wheel-label">VOL</div>
+            </div>
+
+            <div class="slot" data-slot></div>
+
+            <div class="pf p-front metal">
+              <div class="panel">
+                <div class="logo">giftmixtape<span class="sub">STEREO CASSETTE PLAYER</span></div>
+                <div class="led-wrap">
+                  <span class="led"></span><span class="led-label">PLAY</span>
+                </div>
+              </div>
+            </div>
+            <div class="pf door metal"></div>
+            <div class="pf glass"></div>
+            <div class="pf door-print">
+              <span class="l">◀ A · B ▶</span><span class="r">AUTO REVERSE</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info">
+          <h2>가을밤 드라이브</h2>
+          <p class="from">하늘님이 바다님에게 선물한 노래 5곡</p>
+          <ol class="tracks" data-tracks></ol>
+          <div class="actions">
+            <button class="btn" data-insert>⏏ 테이프 넣기</button>
+            <button class="btn" data-toggle disabled>▶ 재생</button>
+          </div>
+          <div class="status" data-status>테이프를 넣어주세요</div>
+          <div class="opts">
+            <div class="picker">
+              <span>본체</span>
+              <div class="swatches" data-body></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 테이프 앞면 3종 -->
+    <template id="tape-A">
+      <div class="cassette v-color" style="--label: #2f4fa8" data-spine="가을밤 드라이브">
+        <div class="face front">
+          <div class="sticker cream">
+            <div class="bands"></div>
+            <div class="side">SIDE<b>A</b></div>
+            <div class="title"><span class="ut"><span>가을밤 드라이브</span></span></div>
+            <div class="meta">
+              <div><span class="cap">From</span><span class="ut"><span>하늘</span></span></div>
+              <div><span class="cap">To</span><span class="ut"><span>바다</span></span></div>
+            </div>
+            <div class="mins">5<small>SONGS · 2:30</small></div>
+          </div>
+          <div class="window" data-reels></div>
+          <div class="guide"></div>
+          <span class="screw s1"></span><span class="screw s2"></span><span class="screw s3"></span
+          ><span class="screw s4"></span><span class="screw s5"></span>
+          <div class="gloss"></div>
+        </div>
+      </div>
+    </template>
+    <template id="tape-B">
+      <div class="cassette v-print" style="--label: #d9573b" data-spine="가을밤 드라이브">
+        <div class="face front">
+          <div class="sticker printed">
+            <div class="band">
+              <span class="brand">MIX<br />TAPE</span>
+              <span class="vert">Type I · Normal</span>
+              <span class="len">C5<small>songs</small></span>
+            </div>
+            <div class="body">
+              <span class="side-mark">A</span>
+              <div class="row">
+                <span class="cap">Title</span><span class="ut"><span>가을밤 드라이브</span></span>
+              </div>
+              <div class="row">
+                <span class="cap">For</span><span class="ut"><span>하늘 → 바다</span></span>
+              </div>
+              <div class="ruler"></div>
+              <div class="spec"><span>000</span><span>giftmixtape</span><span>150</span></div>
+            </div>
+          </div>
+          <div class="window" data-reels></div>
+          <div class="guide"></div>
+          <span class="screw s1"></span><span class="screw s2"></span><span class="screw s3"></span
+          ><span class="screw s4"></span><span class="screw s5"></span>
+          <div class="gloss"></div>
+        </div>
+      </div>
+    </template>
+    <template id="tape-C">
+      <div class="cassette v-gyeon" style="--label: #2b2b2e" data-spine="가을밤 드라이브">
+        <div class="face front">
+          <div class="recess"></div>
+          <div class="gy gy-title"><span class="ut"><span>가을밤 드라이브</span></span></div>
+          <div class="gy gy-side">A</div>
+          <div class="gy gy-names"><span class="ut"><span>하늘 → 바다</span></span></div>
+          <div class="gy gy-dot round"><span class="ut"><span>5곡</span></span></div>
+          <div class="window" data-reels></div>
+          <div class="guide"></div>
+          <span class="screw s1"></span><span class="screw s2"></span><span class="screw s3"></span
+          ><span class="screw s4"></span><span class="screw s5"></span>
+          <div class="gloss"></div>
+        </div>
+      </div>
+    </template>
+
+    <script>
+      const TRACKS = [
+        { title: "밤편지", artist: "아이유" },
+        { title: "사건의 지평선", artist: "윤하" },
+        { title: "Ditto", artist: "NewJeans" },
+        { title: "한 페이지가 될 수 있게", artist: "DAY6" },
+        { title: "봄날", artist: "방탄소년단" },
+      ];
+      const TRACK_MS = 30000;
+      const TOTAL_MS = TRACK_MS * TRACKS.length;
+      const BODIES = [
+        { name: "실버", cls: "silver", body: "#c9ccd1", side: "#a9adb3", trim: "#d9573b" },
+        { name: "네이비", body: "#26324d", side: "#1b2438", trim: "#e2a72e" },
+        { name: "레드", body: "#b8342b", side: "#8c2620", trim: "#f2ede3" },
+        { name: "옐로", body: "#e5b52b", side: "#b88f1c", trim: "#1f1f22" },
+        { name: "크림", body: "#e9e2cf", side: "#cfc6b0", trim: "#2f4fa8" },
+      ];
+      const POSE = { rx: -16, ry: -24, range: 22 };
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const sleep = (ms) => new Promise((r) => setTimeout(r, reduceMotion ? 0 : ms));
+
+      const stage = document.querySelector("[data-stage]");
+      const player = document.querySelector("[data-player]");
+      const slot = document.querySelector("[data-slot]");
+      const insertBtn = document.querySelector("[data-insert]");
+      const toggleBtn = document.querySelector("[data-toggle]");
+      const statusEl = document.querySelector("[data-status]");
+      const trackList = document.querySelector("[data-tracks]");
+
+      // ── 테이프 ──
+      let cassette;
+      const mountTape = (id) => {
+        slot.replaceChildren(document.getElementById(`tape-${id}`).content.cloneNode(true));
+        cassette = slot.querySelector(".cassette");
+        cassette.insertAdjacentHTML(
+          "beforeend",
+          `<div class="face back"><div class="label-b">B</div></div>
+           <div class="face side-t"><div class="spine"><span>A</span><span class="ut"><span>${cassette.dataset.spine}</span></span><span>C5</span></div></div>
+           <div class="face side-b"></div>
+           <div class="face side-l"></div><div class="face side-r"></div>`,
+        );
+        cassette
+          .querySelector("[data-reels]")
+          .insertAdjacentHTML(
+            "beforeend",
+            `<span class="pack l"></span><span class="pack r"></span>
+             <span class="hub l"></span><span class="hub r"></span>`,
+          );
+        renderPacks();
+        cassette.classList.toggle("playing", playing);
+      };
+
+      const bindSeg = (sel, attr, onPick) => {
+        const seg = document.querySelector(sel);
+        seg.addEventListener("click", (e) => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
+          seg
+            .querySelectorAll("button")
+            .forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+          onPick(btn.dataset[attr]);
+        });
+      };
+      bindSeg("[data-tape-picker]", "tape", mountTape);
+      bindSeg("[data-hand-picker]", "hand", (h) => (document.body.dataset.hand = h));
+
+      // ── 본체 색 ──
+      const bodyBox = document.querySelector("[data-body]");
+      for (const [i, b] of BODIES.entries()) {
+        const s = document.createElement("button");
+        s.className = "swatch";
+        s.style.setProperty("--c", b.body);
+        s.setAttribute("aria-label", `본체 ${b.name}`);
+        s.setAttribute("aria-pressed", String(i === 0));
+        s.addEventListener("click", () => {
+          player.classList.toggle("silver", b.cls === "silver");
+          player.style.setProperty("--body", b.body);
+          player.style.setProperty("--body-side", b.side);
+          player.style.setProperty("--trim", b.trim);
+          bodyBox
+            .querySelectorAll(".swatch")
+            .forEach((x) => x.setAttribute("aria-pressed", String(x === s)));
+        });
+        bodyBox.append(s);
+      }
+
+      // ── 기울기 ──
+      let tilt = { x: 0, y: 0 };
+      const render = () => {
+        const ry = POSE.ry + tilt.x * POSE.range;
+        const rx = POSE.rx - tilt.y * POSE.range * 0.6;
+        player.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+      };
+      render();
+      if (!reduceMotion) {
+        stage.addEventListener("pointermove", (e) => {
+          const r = stage.getBoundingClientRect();
+          tilt = { x: (e.clientX - r.left) / r.width - 0.5, y: (e.clientY - r.top) / r.height - 0.5 };
+          player.classList.add("tracking");
+          render();
+        });
+        stage.addEventListener("pointerleave", () => {
+          tilt = { x: 0, y: 0 };
+          player.classList.remove("tracking");
+          render();
+        });
+      }
+
+      // ── 재생 상태 ──
+      let loaded = false;
+      let busy = false;
+      let playing = false;
+      let track = 0;
+      let pos = 0; // 현재 곡에서 지난 ms
+      let lastT = 0;
+      let raf = 0;
+
+      const fmt = (ms) => `0:${String(Math.floor(ms / 1000)).padStart(2, "0")}`;
+
+      TRACKS.forEach((t, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="n">${String(i + 1).padStart(2, "0")}</span>
+          <span>${t.title}<small>${t.artist}</small></span><time>0:30</time>`;
+        li.addEventListener("click", () => {
+          if (!loaded) return;
+          track = i;
+          pos = 0;
+          if (!playing) play();
+          renderAll();
+        });
+        trackList.append(li);
+      });
+
+      const renderPacks = () => {
+        if (!cassette) return;
+        const p = (track * TRACK_MS + pos) / TOTAL_MS;
+        const [l, r] = cassette.querySelectorAll(".pack");
+        l.style.scale = String(1 - 0.48 * p);
+        r.style.scale = String(0.52 + 0.48 * p);
+      };
+
+      const renderAll = () => {
+        renderPacks();
+        trackList.querySelectorAll("li").forEach((li, i) => {
+          li.classList.toggle("current", loaded && i === track);
+          li.querySelector("time").textContent =
+            loaded && i === track ? `${fmt(pos)} / 0:30` : "0:30";
+        });
+        toggleBtn.disabled = !loaded || busy;
+        toggleBtn.textContent = playing ? "■ 정지" : "▶ 재생";
+        insertBtn.textContent = loaded ? "⏏ 꺼내기" : "⏏ 테이프 넣기";
+        insertBtn.disabled = busy;
+        player.classList.toggle("on", playing);
+        cassette?.classList.toggle("playing", playing);
+        player.querySelector('[data-key="play"]').classList.toggle("down", playing);
+        statusEl.textContent = !loaded
+          ? "테이프를 넣어주세요"
+          : playing
+            ? `${track + 1}번째 곡 · ${TRACKS[track].title}`
+            : "재생 버튼을 눌러보세요";
+      };
+
+      const loop = (t) => {
+        pos += t - lastT;
+        lastT = t;
+        if (pos >= TRACK_MS) {
+          if (track < TRACKS.length - 1) {
+            track += 1;
+            pos = 0;
+          } else {
+            pos = TRACK_MS;
+            stop();
+            statusEl.textContent = "B면으로 뒤집을 시간이에요";
+            return;
+          }
+        }
+        renderAll();
+        raf = requestAnimationFrame(loop);
+      };
+
+      const play = () => {
+        if (!loaded || busy) return;
+        if (track === TRACKS.length - 1 && pos >= TRACK_MS) {
+          track = 0;
+          pos = 0;
+        }
+        playing = true;
+        lastT = performance.now();
+        raf = requestAnimationFrame(loop);
+        renderAll();
+      };
+
+      const stop = () => {
+        playing = false;
+        cancelAnimationFrame(raf);
+        renderAll();
+      };
+
+      const setOpen = (deg) => player.style.setProperty("--open", `${deg}deg`);
+
+      const insert = async () => {
+        busy = true;
+        renderAll();
+        setOpen(-34);
+        await sleep(450);
+        player.classList.add("loaded");
+        await sleep(800);
+        setOpen(0);
+        await sleep(450);
+        loaded = true;
+        busy = false;
+        renderAll();
+      };
+
+      const eject = async () => {
+        stop();
+        busy = true;
+        loaded = false;
+        renderAll();
+        setOpen(-34);
+        await sleep(450);
+        player.classList.remove("loaded");
+        await sleep(700);
+        setOpen(0);
+        busy = false;
+        renderAll();
+      };
+
+      const pressKey = (name) => {
+        const key = player.querySelector(`[data-key="${name}"]`);
+        if (name !== "play") {
+          key.classList.add("down");
+          setTimeout(() => key.classList.remove("down"), 160);
+        }
+      };
+
+      const onKey = (name) => {
+        if (busy) return;
+        pressKey(name);
+        if (name === "play") return playing ? stop() : play();
+        if (name === "stop") return playing ? stop() : loaded ? eject() : insert();
+        if (!loaded) return;
+        if (name === "ff") {
+          track = Math.min(TRACKS.length - 1, track + 1);
+          pos = 0;
+        }
+        if (name === "rew") {
+          if (pos < 2000) track = Math.max(0, track - 1);
+          pos = 0;
+        }
+        renderAll();
+      };
+
+      player.querySelectorAll("[data-key]").forEach((k) => {
+        k.addEventListener("click", (e) => {
+          e.stopPropagation();
+          onKey(k.dataset.key);
+        });
+      });
+      insertBtn.addEventListener("click", () => (loaded ? eject() : insert()));
+      toggleBtn.addEventListener("click", () => onKey("play"));
+
+      mountTape("A");
+      renderAll();
+    </script>
+  </body>
+</html>

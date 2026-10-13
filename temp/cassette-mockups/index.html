@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>카세트 목업 v2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Gaegu:wght@400;700&family=Hi+Melody&family=Nanum+Gothic+Coding:wght@400;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-hand="pen">
+    <main class="page">
+      <section class="intro">
+        <div class="intro-top">
+          <h1>Cassette <em>v2</em></h1>
+          <p>
+            마우스를 올리면 기울어지고, 테이프를 누르면 30초 동안 감겨요. 아래에서 글씨 스타일을
+            바꾸면 두 테이프에 같이 적용돼요.
+          </p>
+        </div>
+        <div class="picker">
+          <span>글씨</span>
+          <div class="seg" data-hand-picker>
+            <button data-hand="pen" aria-pressed="true">펜 · 하이멜로디</button>
+            <button data-hand="marker">마커 · 개구</button>
+            <button data-hand="type">타자기</button>
+            <button data-hand="dymo">라벨 프린터</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="mockups">
+        <!-- A -->
+        <article class="mock" data-mock>
+          <header>
+            <span class="no">A</span>
+            <h2>컬러 셸 + 크림 라벨</h2>
+            <p>
+              셸 전체가 고른 색이 되고, 라벨 줄무늬는 그 색에서 톤 3개를 뽑아요. 윗면 책등에도
+              제목이 이어져요.
+            </p>
+          </header>
+          <div class="stage">
+            <svg class="ribbon" viewBox="0 0 400 130" aria-hidden="true">
+              <defs>
+                <linearGradient id="tape" x1="0" x2="1">
+                  <stop offset="0" stop-color="#2a1b12" />
+                  <stop offset=".45" stop-color="#5a3a26" />
+                  <stop offset=".55" stop-color="#2a1b12" />
+                  <stop offset="1" stop-color="#4a2f1f" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M150 6 C 140 40, 70 40, 62 74 C 54 108, 120 122, 158 100 C 196 78, 170 46, 214 50 C 258 54, 236 104, 286 108 C 330 112, 352 86, 372 98"
+                fill="none"
+                stroke="url(#tape)"
+                stroke-width="7"
+              />
+              <path
+                d="M150 6 C 140 40, 70 40, 62 74 C 54 108, 120 122, 158 100 C 196 78, 170 46, 214 50 C 258 54, 236 104, 286 108 C 330 112, 352 86, 372 98"
+                fill="none"
+                stroke="rgba(255,230,200,.28)"
+                stroke-width="1.2"
+                transform="translate(-1.5 -1.5)"
+              />
+            </svg>
+            <div class="cassette v-color" style="--label: #2f4fa8" data-spine="가을밤 드라이브">
+              <div class="face front">
+                <div class="sticker cream">
+                  <div class="bands"></div>
+                  <div class="side">SIDE<b>A</b></div>
+                  <div class="title">
+                    <span class="ut"><span>가을밤 드라이브</span></span>
+                  </div>
+                  <div class="meta">
+                    <div><span class="cap">From</span><span class="ut"><span>하늘</span></span></div>
+                    <div><span class="cap">To</span><span class="ut"><span>바다</span></span></div>
+                  </div>
+                  <div class="mins">5<small>SONGS · 2:30</small></div>
+                </div>
+                <div class="window" data-reels></div>
+                <div class="guide"></div>
+                <span class="screw s1"></span><span class="screw s2"></span
+                ><span class="screw s3"></span><span class="screw s4"></span
+                ><span class="screw s5"></span>
+                <div class="gloss"></div>
+              </div>
+            </div>
+          </div>
+          <div class="controls">
+            <div class="swatches" data-swatches="#2f4fa8 #c9452e #2f6f55 #d99a2b #b85c8a #2b2b2e"></div>
+            <div class="buttons">
+              <button class="btn" data-play>▶ 재생</button>
+              <button class="btn" data-flip>B면</button>
+            </div>
+          </div>
+          <div class="progress"><i></i></div>
+        </article>
+
+        <!-- B -->
+        <article class="mock" data-mock>
+          <header>
+            <span class="no">B</span>
+            <h2>인쇄 라벨 · 블랙/화이트 셸</h2>
+            <p>
+              컬러 밴드에 압축된 굵은 숫자, 오른쪽은 제목·이름을 적는 줄. 셸은 BASF 같은 블랙과
+              SONY 같은 화이트 중에 고를 수 있어요.
+            </p>
+          </header>
+          <div class="stage">
+            <div class="cassette v-print" style="--label: #d9573b" data-spine="가을밤 드라이브">
+              <div class="face front">
+                <div class="sticker printed">
+                  <div class="band">
+                    <span class="brand">MIX<br />TAPE</span>
+                    <span class="vert">Type I · Normal</span>
+                    <span class="len">C5<small>songs</small></span>
+                  </div>
+                  <div class="body">
+                    <span class="side-mark">A</span>
+                    <div class="row">
+                      <span class="cap">Title</span
+                      ><span class="ut"><span>가을밤 드라이브</span></span>
+                    </div>
+                    <div class="row">
+                      <span class="cap">For</span><span class="ut"><span>하늘 → 바다</span></span>
+                    </div>
+                    <div class="ruler"></div>
+                    <div class="spec"><span>000</span><span>giftmixtape</span><span>150</span></div>
+                  </div>
+                </div>
+                <div class="window" data-reels></div>
+                <div class="guide"></div>
+                <span class="screw s1"></span><span class="screw s2"></span
+                ><span class="screw s3"></span><span class="screw s4"></span
+                ><span class="screw s5"></span>
+                <div class="gloss"></div>
+              </div>
+            </div>
+          </div>
+          <div class="controls">
+            <div class="swatches" data-swatches="#d9573b #e2a72e #2f8f7a #3a5bd0 #8b5cc4 #1f1f22"></div>
+            <div class="buttons">
+              <button class="btn" data-shell>화이트 셸</button>
+              <button class="btn" data-play>▶ 재생</button>
+              <button class="btn" data-flip>B면</button>
+            </div>
+          </div>
+          <div class="progress"><i></i></div>
+        </article>
+        <!-- C -->
+        <article class="mock" data-mock>
+          <header>
+            <span class="no">C</span>
+            <h2>무지 셸 + 견출지</h2>
+            <p>
+              라벨 없는 공테이프에 견출지를 직접 붙이고 쓴 느낌. 제목, 면, 이름, 곡 수를 견출지
+              네 장에 나눠 붙였어요. 테두리는 빨강·파랑 중에 고를 수 있어요.
+            </p>
+          </header>
+          <div class="stage">
+            <div class="cassette v-gyeon" style="--label: #2b2b2e" data-spine="가을밤 드라이브">
+              <div class="face front">
+                <div class="recess"></div>
+                <div class="gy gy-title"><span class="ut"><span>가을밤 드라이브</span></span></div>
+                <div class="gy gy-side">A</div>
+                <div class="gy gy-names"><span class="ut"><span>하늘 → 바다</span></span></div>
+                <div class="gy gy-dot round"><span class="ut"><span>5곡</span></span></div>
+                <div class="window" data-reels></div>
+                <div class="guide"></div>
+                <span class="screw s1"></span><span class="screw s2"></span
+                ><span class="screw s3"></span><span class="screw s4"></span
+                ><span class="screw s5"></span>
+                <div class="gloss"></div>
+              </div>
+            </div>
+          </div>
+          <div class="controls">
+            <div class="swatches" data-swatches="#2b2b2e #e8e5de #2f4fa8 #c9452e #9fb8a5 #e3b23c"></div>
+            <div class="buttons">
+              <button class="btn" data-line>파랑 테두리</button>
+              <button class="btn" data-play>▶ 재생</button>
+              <button class="btn" data-flip>B면</button>
+            </div>
+          </div>
+          <div class="progress"><i></i></div>
+        </article>
+      </div>
+    </main>
+
+    <script>
+      const POSE = { rx: -9, ry: -20, range: 26 };
+      const PREVIEW_MS = 30000;
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // 글씨 스타일 바꾸기
+      const handPicker = document.querySelector("[data-hand-picker]");
+      handPicker.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        document.body.dataset.hand = btn.dataset.hand;
+        handPicker
+          .querySelectorAll("button")
+          .forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      });
+
+      for (const mock of document.querySelectorAll("[data-mock]")) {
+        const stage = mock.querySelector(".stage");
+        const cassette = mock.querySelector(".cassette");
+        const front = cassette.querySelector(".front");
+        const playBtn = mock.querySelector("[data-play]");
+        const flipBtn = mock.querySelector("[data-flip]");
+        const shellBtn = mock.querySelector("[data-shell]");
+        const bar = mock.querySelector(".progress i");
+
+        cassette.insertAdjacentHTML(
+          "beforeend",
+          `<div class="face back"><div class="label-b">B</div></div>
+           <div class="face side-t"><div class="spine"><span>A</span><span class="ut"><span>${cassette.dataset.spine}</span></span><span>C5</span></div></div>
+           <div class="face side-b"></div>
+           <div class="face side-l"></div><div class="face side-r"></div>
+           <div class="cast"></div>`,
+        );
+        front
+          .querySelector("[data-reels]")
+          .insertAdjacentHTML(
+            "beforeend",
+            `<span class="pack l"></span><span class="pack r"></span>
+             <span class="hub l"></span><span class="hub r"></span>`,
+          );
+
+        let tilt = { x: 0, y: 0 };
+        let flipped = false;
+
+        const render = () => {
+          const ry = POSE.ry + tilt.x * POSE.range + (flipped ? 180 : 0);
+          const rx = POSE.rx - tilt.y * POSE.range * 0.7;
+          cassette.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+        };
+        render();
+
+        if (!reduceMotion) {
+          stage.addEventListener("pointermove", (e) => {
+            const rect = stage.getBoundingClientRect();
+            tilt = {
+              x: (e.clientX - rect.left) / rect.width - 0.5,
+              y: (e.clientY - rect.top) / rect.height - 0.5,
+            };
+            cassette.classList.add("tracking");
+            front.style.setProperty("--gx", `${(tilt.x + 0.5) * 100}%`);
+            front.style.setProperty("--gy", `${(tilt.y + 0.5) * 100}%`);
+            render();
+          });
+          stage.addEventListener("pointerleave", () => {
+            tilt = { x: 0, y: 0 };
+            cassette.classList.remove("tracking");
+            front.style.removeProperty("--gx");
+            front.style.removeProperty("--gy");
+            render();
+          });
+        }
+
+        let elapsed = 0;
+        let startedAt = 0;
+        let raf = 0;
+        const packs = cassette.querySelectorAll(".pack");
+
+        const tick = () => {
+          const t = Math.min(1, (elapsed + performance.now() - startedAt) / PREVIEW_MS);
+          bar.style.scale = `${t} 1`;
+          if (t >= 1) return stop(true);
+          raf = requestAnimationFrame(tick);
+        };
+        const start = () => {
+          if (elapsed >= PREVIEW_MS) {
+            elapsed = 0;
+            packs.forEach((p) => {
+              p.style.animation = "none";
+              p.offsetWidth;
+              p.style.animation = "";
+            });
+          }
+          startedAt = performance.now();
+          cassette.classList.add("playing");
+          playBtn.setAttribute("aria-pressed", "true");
+          playBtn.textContent = "❚❚ 정지";
+          raf = requestAnimationFrame(tick);
+        };
+        const stop = (ended = false) => {
+          elapsed = ended ? PREVIEW_MS : elapsed + performance.now() - startedAt;
+          cancelAnimationFrame(raf);
+          cassette.classList.remove("playing");
+          playBtn.setAttribute("aria-pressed", "false");
+          playBtn.textContent = ended ? "↺ 다시" : "▶ 재생";
+        };
+        const toggle = () => (cassette.classList.contains("playing") ? stop() : start());
+
+        playBtn.addEventListener("click", toggle);
+        cassette.addEventListener("click", toggle);
+        flipBtn.addEventListener("click", () => {
+          flipped = !flipped;
+          flipBtn.setAttribute("aria-pressed", String(flipped));
+          render();
+        });
+        shellBtn?.addEventListener("click", () => {
+          const white = cassette.classList.toggle("white");
+          shellBtn.setAttribute("aria-pressed", String(white));
+        });
+
+        const lineBtn = mock.querySelector("[data-line]");
+        lineBtn?.addEventListener("click", () => {
+          const blue = cassette.classList.toggle("blue");
+          lineBtn.setAttribute("aria-pressed", String(blue));
+        });
+
+        const swatchBox = mock.querySelector("[data-swatches]");
+        const colors = swatchBox.dataset.swatches.split(" ");
+        for (const [i, c] of colors.entries()) {
+          const b = document.createElement("button");
+          b.className = "swatch";
+          b.style.setProperty("--c", c);
+          b.setAttribute("aria-label", `라벨 색 ${c}`);
+          b.setAttribute("aria-pressed", String(i === 0));
+          b.addEventListener("click", () => {
+            cassette.style.setProperty("--label", c);
+            swatchBox
+              .querySelectorAll(".swatch")
+              .forEach((s) => s.setAttribute("aria-pressed", String(s === b)));
+          });
+          swatchBox.append(b);
+        }
+      }
+    </script>
+  </body>
+</html>

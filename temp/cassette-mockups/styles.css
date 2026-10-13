@@ -1,0 +1,1192 @@
+:root {
+  --paper: #ece6dc;
+  --ink: #26221e;
+  --muted: #7b7268;
+  --line: #d6ccbe;
+  --w: min(440px, 84vw);
+  --h: calc(var(--w) * 0.636);
+  --d: calc(var(--w) * 0.11);
+  --r: calc(var(--w) * 0.032);
+  --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .25  0 0 0 0 .2  0 0 0 .35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* 사용자가 쓰는 글씨(제목, 이름)의 스타일 후보 */
+body[data-hand="pen"] {
+  --hand-font: "Hi Melody", cursive;
+  --hand-scale: 1.05;
+  --hand-tilt: -2.5deg;
+  --hand-color: #1f2f6e;
+}
+
+body[data-hand="marker"] {
+  --hand-font: "Gaegu", cursive;
+  --hand-weight: 700;
+  --hand-scale: 0.92;
+  --hand-tilt: -2deg;
+  --hand-color: #1b1b1b;
+}
+
+body[data-hand="type"] {
+  --hand-font: "Nanum Gothic Coding", monospace;
+  --hand-scale: 0.66;
+  --hand-tilt: 0deg;
+  --hand-color: #2b2724;
+  --hand-spacing: 0.02em;
+}
+
+body[data-hand="dymo"] {
+  --hand-font: "Pretendard Variable", sans-serif;
+  --hand-weight: 800;
+  --hand-scale: 0.58;
+  --hand-tilt: 0deg;
+  --hand-color: #fbfaf5;
+  --hand-spacing: 0.1em;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Pretendard Variable", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+  background-image: var(--noise);
+  z-index: 10;
+}
+
+.page {
+  overflow-x: clip;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+
+.intro {
+  display: grid;
+  gap: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 22px;
+}
+
+.intro-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px 32px;
+}
+
+.intro h1 {
+  margin: 0;
+  font-family: "Archivo", sans-serif;
+  font-weight: 900;
+  font-stretch: 80%;
+  font-size: clamp(34px, 5.4vw, 58px);
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.intro h1 em {
+  font-style: normal;
+  color: #c4472d;
+}
+
+.intro p {
+  margin: 0;
+  max-width: 400px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.picker > span {
+  font:
+    700 11px/1 "Space Mono",
+    monospace;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: #e2dbcf;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.seg button {
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font:
+    600 13px/1 "Pretendard Variable",
+    sans-serif;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.seg button[aria-pressed="true"] {
+  background: #fbf8f2;
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.mockups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
+  gap: 48px 40px;
+  margin-top: 40px;
+}
+
+.mock header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  align-items: baseline;
+}
+
+.mock .no {
+  font-family: "Space Mono", monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.mock h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.mock header p {
+  grid-column: 2;
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: calc(var(--w) * 1.02);
+  margin: 8px 0 4px;
+  perspective: 1200px;
+  perspective-origin: 50% 35%;
+  touch-action: manipulation;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  justify-content: space-between;
+}
+
+.swatches {
+  display: flex;
+  gap: 8px;
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  box-shadow: 0 0 0 1px var(--line);
+  background: var(--c);
+  cursor: pointer;
+  padding: 0;
+}
+
+.swatch[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  font:
+    600 13px/1 "Pretendard Variable",
+    sans-serif;
+  color: var(--ink);
+  background: #f6f1e8;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #fff;
+}
+
+.btn[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.progress {
+  height: 2px;
+  margin-top: 14px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.progress i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transform-origin: left;
+  scale: 0 1;
+}
+
+/* ───────── 사용자 글씨 ───────── */
+
+.ut {
+  font-family: var(--hand-font);
+  font-weight: var(--hand-weight, 400);
+  letter-spacing: var(--hand-spacing, 0);
+  color: var(--hand-color);
+  display: inline-block;
+  rotate: var(--hand-tilt);
+  transform-origin: left center;
+}
+
+body[data-hand="type"] .ut {
+  text-shadow:
+    0 0 0.6px rgba(30, 25, 20, 0.7),
+    0.4px 0 0 rgba(30, 25, 20, 0.25);
+}
+
+/* 라벨 프린터: 줄마다 볼록하게 찍힌 테이프 */
+body[data-hand="dymo"] .ut > span {
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent 40%, rgba(0, 0, 0, 0.25)),
+    #17181b;
+  padding: 0.12em 0.45em 0.08em;
+  border-radius: 1.5px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  text-shadow:
+    0 -1px 0 rgba(0, 0, 0, 0.7),
+    0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.4);
+  line-height: 1.9;
+}
+
+/* ───────── 카세트 공통 ───────── */
+
+.cassette {
+  --shell: #1f1e1c;
+  --shell-side: #151413;
+  --hub: #f1ede4;
+  --label: #e9b44c;
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+}
+
+.cassette.tracking {
+  transition: transform 0.12s linear;
+}
+
+.face {
+  position: absolute;
+}
+
+.front,
+.back {
+  inset: 0;
+  border-radius: var(--r);
+  background: var(--shell);
+  overflow: hidden;
+}
+
+.front {
+  transform: translateZ(calc(var(--d) / 2));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* 성형 플라스틱의 둘레 턱 */
+.front::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--w) * 0.012);
+  border-radius: calc(var(--r) * 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 0 rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.back {
+  transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
+}
+
+.side-t,
+.side-b {
+  left: calc(var(--r) * 0.6);
+  width: calc(var(--w) - var(--r) * 1.2);
+  height: var(--d);
+  top: calc(50% - var(--d) / 2);
+  background: var(--shell-side);
+}
+
+.side-t {
+  transform: rotateX(90deg) translateZ(calc(var(--h) / 2));
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.14),
+    transparent 40%,
+    rgba(0, 0, 0, 0.15)
+  );
+  display: grid;
+  place-items: center;
+}
+
+/* 윗면(책등)에도 라벨이 이어진다 */
+.spine {
+  width: 70%;
+  height: 56%;
+  border-radius: 2px;
+  background: #efe6cf;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4%;
+  font:
+    700 calc(var(--d) * 0.26) / 1 "Archivo",
+    sans-serif;
+  font-stretch: 75%;
+  letter-spacing: 0.08em;
+  color: #2a2520;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+
+.spine .ut {
+  font-size: calc(var(--d) * 0.42 * var(--hand-scale));
+  rotate: 0deg;
+  white-space: nowrap;
+}
+
+body[data-hand="dymo"] .spine .ut > span {
+  line-height: 1.4;
+}
+
+.side-b {
+  transform: rotateX(-90deg) translateZ(calc(var(--h) / 2));
+  background:
+    linear-gradient(#0b0b0b, #0b0b0b) 50% 50% / 13% 58% no-repeat,
+    linear-gradient(#0b0b0b, #0b0b0b) 31% 50% / 6% 58% no-repeat,
+    linear-gradient(#0b0b0b, #0b0b0b) 69% 50% / 6% 58% no-repeat,
+    linear-gradient(#0b0b0b, #0b0b0b) 22% 50% / 3% 40% no-repeat,
+    linear-gradient(#0b0b0b, #0b0b0b) 78% 50% / 3% 40% no-repeat,
+    var(--shell-side);
+}
+
+.side-l,
+.side-r {
+  width: var(--d);
+  height: calc(var(--h) - var(--r) * 1.2);
+  top: calc(var(--r) * 0.6);
+  left: calc(50% - var(--d) / 2);
+  background: var(--shell-side);
+  background-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.2),
+    rgba(255, 255, 255, 0.07) 50%,
+    rgba(0, 0, 0, 0.2)
+  );
+}
+
+.side-l {
+  transform: rotateY(-90deg) translateZ(calc(var(--w) / 2));
+}
+
+.side-r {
+  transform: rotateY(90deg) translateZ(calc(var(--w) / 2));
+}
+
+.cast {
+  position: absolute;
+  inset: 6% 4%;
+  border-radius: 12px;
+  background: rgba(40, 28, 16, 0.55);
+  filter: blur(24px);
+  transform: translateZ(calc(var(--d) * -0.5 - 26px));
+}
+
+.window {
+  position: absolute;
+  left: 22%;
+  width: 56%;
+  top: 33%;
+  height: 21%;
+  border-radius: calc(var(--w) * 0.02);
+  background: #1a1715;
+  overflow: hidden;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    0 0 0 calc(var(--w) * 0.006) rgba(0, 0, 0, 0.35);
+  z-index: 2;
+}
+
+.window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.16) 32%,
+    transparent 44%,
+    transparent 70%,
+    rgba(255, 255, 255, 0.08) 78%,
+    transparent 84%
+  );
+  pointer-events: none;
+  z-index: 3;
+}
+
+.pack {
+  position: absolute;
+  top: 50%;
+  aspect-ratio: 1;
+  width: 68%;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, transparent 0 30%, rgba(0, 0, 0, 0.25) 31%, transparent 34%),
+    conic-gradient(
+      from 210deg,
+      transparent 0deg,
+      rgba(255, 220, 190, 0.22) 25deg,
+      transparent 60deg,
+      transparent 180deg,
+      rgba(255, 220, 190, 0.12) 205deg,
+      transparent 240deg
+    ),
+    repeating-radial-gradient(circle, #3a2417 0 1px, #4d3223 1px 2.2px);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+  animation: unwind 30s linear forwards paused;
+}
+
+.pack.l {
+  left: 14.3%;
+}
+
+.pack.r {
+  left: 85.7%;
+  scale: 0.52;
+  animation-name: wind;
+}
+
+@keyframes unwind {
+  to {
+    scale: 0.52;
+  }
+}
+
+@keyframes wind {
+  to {
+    scale: 1;
+  }
+}
+
+.hub {
+  position: absolute;
+  top: 50%;
+  aspect-ratio: 1;
+  width: 21%;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 0 56%,
+    var(--hub) 57% 69%,
+    rgba(0, 0, 0, 0.3) 70% 72%,
+    transparent 73%
+  );
+  animation: spin 1.8s linear infinite paused;
+  z-index: 2;
+}
+
+.hub::before {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(var(--hub) 0 15deg, transparent 15deg 60deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 46%, #000 47%);
+  mask: radial-gradient(circle, transparent 0 46%, #000 47%);
+}
+
+.hub.l {
+  left: 14.3%;
+}
+
+.hub.r {
+  left: 85.7%;
+}
+
+@keyframes spin {
+  to {
+    rotate: -360deg;
+  }
+}
+
+.playing .hub,
+.playing .pack {
+  animation-play-state: running;
+}
+
+.screw {
+  position: absolute;
+  width: calc(var(--w) * 0.03);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background:
+    linear-gradient(45deg, transparent 44%, rgba(0, 0, 0, 0.55) 45% 55%, transparent 56%),
+    linear-gradient(-45deg, transparent 44%, rgba(0, 0, 0, 0.55) 45% 55%, transparent 56%),
+    radial-gradient(circle at 35% 30%, #f3f1ec, #9a978f 60%, #5d5b56);
+  box-shadow:
+    0 0 0 calc(var(--w) * 0.004) rgba(0, 0, 0, 0.35),
+    0 1px 1px rgba(255, 255, 255, 0.25);
+  z-index: 3;
+}
+
+.s1 {
+  left: 4%;
+  top: 6.5%;
+}
+
+.s2 {
+  left: 96%;
+  top: 6.5%;
+}
+
+.s3 {
+  left: 4%;
+  top: 93.5%;
+}
+
+.s4 {
+  left: 96%;
+  top: 93.5%;
+}
+
+.s5 {
+  left: 50%;
+  top: 88%;
+}
+
+.guide {
+  position: absolute;
+  left: 17%;
+  width: 66%;
+  bottom: 0;
+  height: 20%;
+  clip-path: polygon(7% 0, 93% 0, 100% 100%, 0 100%);
+  background:
+    radial-gradient(circle, #0b0b0b 0 38%, transparent 42%) 18% 62% / 7% 32% no-repeat,
+    radial-gradient(circle, #0b0b0b 0 38%, transparent 42%) 82% 62% / 7% 32% no-repeat,
+    linear-gradient(#0b0b0b, #0b0b0b) 36% 70% / 4.5% 30% no-repeat,
+    linear-gradient(#0b0b0b, #0b0b0b) 64% 70% / 4.5% 30% no-repeat,
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.12)),
+    var(--shell);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  z-index: 2;
+}
+
+.guide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+.gloss {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at var(--gx, 30%) var(--gy, 15%),
+      rgba(255, 255, 255, 0.26),
+      transparent 42%
+    ),
+    linear-gradient(125deg, transparent 35%, rgba(255, 255, 255, 0.07) 45%, transparent 55%);
+  mix-blend-mode: screen;
+  z-index: 5;
+}
+
+/* 종이 라벨 공통: 질감과 스티커 두께 */
+.sticker {
+  position: absolute;
+  overflow: hidden;
+  z-index: 1;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.18),
+    0 0 0 0.5px rgba(0, 0, 0, 0.12);
+}
+
+.sticker::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--noise);
+  background-size: 140px;
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.back .label-b {
+  position: absolute;
+  inset: 8% 6.5% 30%;
+  border-radius: calc(var(--w) * 0.012);
+  background: #efe4c9;
+  display: grid;
+  place-items: center;
+  font:
+    900 calc(var(--w) * 0.14) / 1 "Archivo",
+    sans-serif;
+  font-stretch: 70%;
+  color: rgba(0, 0, 0, 0.78);
+}
+
+/* ───────── A: 컬러 셸 + 크림 라벨 ───────── */
+
+.v-color {
+  --shell: var(--label);
+  --shell-side: color-mix(in oklab, var(--label) 68%, #000);
+  --hub: #f3efe6;
+  --cream: #f0e5c9;
+}
+
+.v-color .front {
+  background:
+    linear-gradient(170deg, rgba(255, 255, 255, 0.14), transparent 40%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.022) 0 1px, transparent 1px 3px), var(--shell);
+}
+
+.v-color .back {
+  background: var(--shell);
+}
+
+.cream {
+  left: 6.5%;
+  right: 6.5%;
+  top: 8%;
+  height: 64%;
+  border-radius: calc(var(--w) * 0.012);
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.5), transparent 30%), var(--cream);
+}
+
+/* 창 뒤로 지나가는 3단 줄무늬. 라벨 색에서 톤을 만든다 */
+.cream .bands {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52%;
+  height: 17%;
+  background: linear-gradient(
+    to bottom,
+    var(--label) 0 34%,
+    transparent 34% 44%,
+    color-mix(in oklab, var(--label) 62%, var(--cream)) 44% 70%,
+    transparent 70% 78%,
+    color-mix(in oklab, var(--label) 32%, var(--cream)) 78% 100%
+  );
+}
+
+.cream .side {
+  position: absolute;
+  left: 4%;
+  top: 8%;
+  font:
+    700 calc(var(--w) * 0.022) / 1 "Archivo",
+    sans-serif;
+  font-stretch: 80%;
+  letter-spacing: 0.12em;
+  color: #3a342c;
+  text-align: center;
+}
+
+.cream .side b {
+  display: block;
+  font-weight: 900;
+  font-size: 3em;
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.cream .title {
+  position: absolute;
+  left: 16%;
+  right: 5%;
+  top: 8%;
+  font-size: calc(var(--w) * 0.066 * var(--hand-scale));
+  line-height: 1.12;
+  white-space: nowrap;
+}
+
+.cream .meta {
+  position: absolute;
+  left: 4%;
+  bottom: 7%;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.cream .meta .ut {
+  font-size: calc(var(--w) * 0.05 * var(--hand-scale));
+  rotate: 0deg;
+}
+
+.cap {
+  font:
+    700 calc(var(--w) * 0.017) / 1 "Space Mono",
+    monospace;
+  letter-spacing: 0.1em;
+  color: #6b6153;
+  text-transform: uppercase;
+  margin-right: 6px;
+}
+
+.cream .mins {
+  position: absolute;
+  right: 4%;
+  bottom: 6%;
+  text-align: right;
+  font:
+    900 calc(var(--w) * 0.08) / 0.85 "Archivo",
+    sans-serif;
+  font-stretch: 68%;
+  color: #2a2520;
+}
+
+.cream .mins small {
+  display: block;
+  margin-top: 4px;
+  font:
+    700 calc(var(--w) * 0.017) / 1 "Space Mono",
+    monospace;
+  letter-spacing: 0.12em;
+}
+
+.v-color .window {
+  top: 30%;
+}
+
+.ribbon {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(var(--w) * 1.05);
+  translate: -54% 0;
+  pointer-events: none;
+}
+
+/* ───────── B: 인쇄 라벨 (블랙·화이트 셸) ───────── */
+
+.v-print {
+  --shell: #1c1b1a;
+  --shell-side: #121110;
+  --hub: #e9e6df;
+  --label: #d9573b;
+  --paper-l: #f2ede3;
+}
+
+.v-print .front {
+  background:
+    radial-gradient(circle at 50% 120%, rgba(255, 255, 255, 0.05), transparent 60%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 2px),
+    var(--shell);
+}
+
+.v-print.white {
+  --shell: #e8e5de;
+  --shell-side: #cdc9c0;
+  --hub: #fbfaf7;
+  --paper-l: #f7f4ee;
+}
+
+.v-print.white .front {
+  background:
+    linear-gradient(170deg, rgba(255, 255, 255, 0.6), transparent 45%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.012) 0 1px, transparent 1px 2px), var(--shell);
+}
+
+.v-print.white .back .label-b {
+  background: var(--paper-l);
+}
+
+.printed {
+  left: 6%;
+  right: 6%;
+  top: 8%;
+  height: 66%;
+  border-radius: calc(var(--w) * 0.01);
+  background: var(--paper-l);
+  display: grid;
+  grid-template-columns: 26% 1fr;
+}
+
+.printed .band {
+  position: relative;
+  background: var(--label);
+  color: #fff;
+  padding: 9% 9% 8% 11%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.printed .band::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 8%;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--label) 55%, #000) 0 2px,
+    transparent 2px 5px
+  );
+  opacity: 0.55;
+}
+
+.printed .brand {
+  font:
+    900 calc(var(--w) * 0.074) / 0.84 "Archivo",
+    sans-serif;
+  font-stretch: 66%;
+  letter-spacing: 0.005em;
+}
+
+.printed .vert {
+  align-self: center;
+  justify-self: start;
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  font:
+    700 calc(var(--w) * 0.016) / 1 "Space Mono",
+    monospace;
+  letter-spacing: 0.14em;
+  opacity: 0.85;
+  text-transform: uppercase;
+}
+
+.printed .len {
+  display: flex;
+  align-items: end;
+  gap: 4px;
+  font:
+    900 calc(var(--w) * 0.12) / 0.8 "Archivo",
+    sans-serif;
+  font-stretch: 62%;
+}
+
+.printed .len small {
+  font:
+    700 calc(var(--w) * 0.016) / 1.2 "Space Mono",
+    monospace;
+  letter-spacing: 0.08em;
+  padding-bottom: 2px;
+}
+
+.printed .body {
+  position: relative;
+  padding: 6% 7% 0 6%;
+}
+
+.printed .row {
+  display: flex;
+  align-items: end;
+  height: calc(var(--w) * 0.07);
+  border-bottom: 1px solid #c4b9a6;
+  overflow: hidden;
+}
+
+.printed .row .ut {
+  font-size: calc(var(--w) * 0.06 * var(--hand-scale));
+  line-height: 1.15;
+  rotate: 0deg;
+  white-space: nowrap;
+  padding-bottom: 2px;
+}
+
+body[data-hand="dymo"] .printed .row .ut > span {
+  line-height: 1.5;
+}
+
+.printed .side-mark {
+  position: absolute;
+  right: 7%;
+  top: 6%;
+  width: calc(var(--w) * 0.05);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1.5px solid #2a2520;
+  display: grid;
+  place-items: center;
+  font:
+    900 calc(var(--w) * 0.03) / 1 "Archivo",
+    sans-serif;
+  color: #2a2520;
+  background: var(--paper-l);
+}
+
+.printed .ruler {
+  position: absolute;
+  left: 6%;
+  right: 7%;
+  bottom: 15%;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, #2a2520 0 1px, transparent 1px 5%);
+  opacity: 0.5;
+}
+
+.printed .spec {
+  position: absolute;
+  left: 6%;
+  right: 7%;
+  bottom: 5%;
+  display: flex;
+  justify-content: space-between;
+  font:
+    700 calc(var(--w) * 0.017) / 1 "Space Mono",
+    monospace;
+  letter-spacing: 0.08em;
+  color: #4a443b;
+  text-transform: uppercase;
+}
+
+.v-print .window {
+  left: 34%;
+  width: 52%;
+  top: 37%;
+  height: 21%;
+}
+
+.v-print .pack.l,
+.v-print .hub.l {
+  left: 10%;
+}
+
+.v-print .pack.r,
+.v-print .hub.r {
+  left: 90%;
+}
+
+.v-print .pack {
+  width: 70%;
+}
+
+.v-print .hub {
+  width: 22%;
+}
+
+.v-print .window::before {
+  content: "";
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  top: 0;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.35) 0 1px,
+    transparent 1px 12.5%
+  );
+  -webkit-mask: linear-gradient(to bottom, #000 0 18%, transparent 18% 82%, #000 82%);
+  mask: linear-gradient(to bottom, #000 0 18%, transparent 18% 82%, #000 82%);
+  z-index: 1;
+}
+
+.v-print.white .guide {
+  background:
+    radial-gradient(circle, #1a1a1a 0 38%, transparent 42%) 18% 62% / 7% 32% no-repeat,
+    radial-gradient(circle, #1a1a1a 0 38%, transparent 42%) 82% 62% / 7% 32% no-repeat,
+    linear-gradient(#1a1a1a, #1a1a1a) 36% 70% / 4.5% 30% no-repeat,
+    linear-gradient(#1a1a1a, #1a1a1a) 64% 70% / 4.5% 30% no-repeat,
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0.06)),
+    var(--shell);
+}
+
+/* ───────── C: 견출지 ───────── */
+
+.v-gyeon {
+  --label: #2b2b2e;
+  --shell: var(--label);
+  --shell-side: color-mix(in oklab, var(--label) 70%, #000);
+  --hub: #f3f1ec;
+  --gy-line: #d8343a;
+}
+
+.v-gyeon.blue {
+  --gy-line: #2f5bd3;
+}
+
+.v-gyeon .front {
+  background:
+    linear-gradient(170deg, rgba(255, 255, 255, 0.14), transparent 40%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.022) 0 1px, transparent 1px 3px), var(--shell);
+}
+
+.v-gyeon .back {
+  background: var(--shell);
+}
+
+.v-gyeon .back .label-b {
+  display: none;
+}
+
+/* 라벨이 없는 셸의 오목한 라벨 자리 */
+.recess {
+  position: absolute;
+  left: 6.5%;
+  right: 6.5%;
+  top: 8%;
+  height: 64%;
+  border-radius: calc(var(--w) * 0.014);
+  background: color-mix(in oklab, var(--shell) 92%, #000);
+  box-shadow:
+    inset 0 1.5px 2px rgba(0, 0, 0, 0.35),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.gy {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border-radius: calc(var(--w) * 0.01);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 45%), #f9f8f4;
+  box-shadow:
+    0 0.5px 0 rgba(0, 0, 0, 0.25),
+    0 2px 4px rgba(0, 0, 0, 0.22);
+  z-index: 3;
+}
+
+/* 견출지의 안쪽 테두리 선 */
+.gy::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--w) * 0.007);
+  border: calc(var(--w) * 0.0035) solid var(--gy-line);
+  border-radius: calc(var(--w) * 0.006);
+  pointer-events: none;
+}
+
+.gy.round,
+.gy.round::after {
+  border-radius: 50%;
+}
+
+.gy .ut {
+  rotate: 0deg;
+  white-space: nowrap;
+}
+
+.gy-title {
+  left: 10%;
+  top: 12.5%;
+  width: 60%;
+  height: 16%;
+  rotate: -1.6deg;
+}
+
+.gy-title .ut {
+  font-size: calc(var(--w) * 0.066 * var(--hand-scale));
+}
+
+.gy-side {
+  right: 10%;
+  top: 11.5%;
+  width: 11%;
+  height: 17%;
+  rotate: 3deg;
+  font:
+    900 calc(var(--w) * 0.06) / 1 "Archivo",
+    sans-serif;
+  font-stretch: 70%;
+  color: var(--gy-line);
+}
+
+.gy-names {
+  left: 12%;
+  top: 59%;
+  width: 44%;
+  height: 11.5%;
+  rotate: 1.2deg;
+}
+
+.gy-names .ut {
+  font-size: calc(var(--w) * 0.05 * var(--hand-scale));
+}
+
+.gy-dot {
+  right: 13%;
+  top: 57%;
+  width: 10.5%;
+  aspect-ratio: 1;
+  rotate: -8deg;
+}
+
+.gy-dot .ut {
+  font-size: calc(var(--w) * 0.05 * var(--hand-scale));
+}
+
+.v-gyeon .window {
+  top: 33%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cassette {
+    transition: none;
+  }
+}
