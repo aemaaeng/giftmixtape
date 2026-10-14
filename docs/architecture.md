@@ -84,19 +84,28 @@ type Tape = {
   deleteKeyHash: string;
 };
 
-type TrackRef = {
+// 화면에서 쓰는 곡 (lib/schema/track.ts)
+type Track = {
   id: number; // iTunes trackId
   country: "kr" | "us"; // 곡 정보를 받은 스토어. kr lookup에 없는 곡만 us
-  title: string; // lookup이 실패해도 보여줄 정보
+  title: string; // kr이면 한글 원제
   artist: string;
+  album: string; // 검색 결과에서 같은 곡의 여러 버전(싱글·정규·라이브)을 구분하는 용도. 저장하지 않는다
   artworkUrl: string; // iTunes 이미지 URL. 파일을 저장하지 않는다
+  previewUrl: string; // 저장하지 않고 받는 화면에서 lookup으로 다시 받는다
+  appleMusicUrl: string; // 저장하지 않는다
 };
+
+// 테이프에 저장하는 곡. lookup이 실패해도 보여줄 정보만 남긴다
+type TrackRef = Pick<Track, "id" | "country" | "title" | "artist" | "artworkUrl">;
 ```
 
 - id는 추측할 수 없는 랜덤 10자
 - 만료(TTL)는 두지 않는다
 - 글자 수 제한은 OG 이미지·라벨 디자인에 맞춰 조정할 수 있다
 - 미리듣기 URL은 저장하지 않고 lookup으로 받는다
+- 미리듣기가 없는 곡은 검색 결과에서 뺀다. 검색 결과는 15곡까지
+- iTunes는 브라우저에서 직접 부른다. 서버에서 부르면 모든 사용자가 서버 IP 하나의 호출 제한을 나눠 쓰게 된다. 받는 화면의 서버 렌더링·OG는 저장된 TrackRef만 쓰고, 미리듣기 URL은 브라우저에서 받는다
 
 ### 편집 중 임시 저장 (localStorage `giftmixtape:draft`)
 
