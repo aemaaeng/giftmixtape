@@ -16,7 +16,13 @@
 ### 곡 데이터: iTunes Search API
 
 - 인증 없이 브라우저에서 바로 호출할 수 있다 (API, 커버 이미지, 미리듣기 모두 CORS 허용)
-- `country=kr`은 곡 검색 결과가 0건이다. `us` 또는 `jp`를 쓴다
+- 검색은 `country=us`로 한다. `country=kr` 검색은 결과가 항상 0건이다. jp는 us보다 나은 점이 없다
+- 한글 검색어도 us에서 잘 찾는다. 다만 us는 곡 이름을 영어·로마자로 준다 (밤편지 → Through the Night / IU)
+- 그래서 검색 결과의 곡 ID들을 한 번에 묶어 `country=kr`로 lookup해 이름을 받는다. kr lookup은 한글 원제와 미리듣기, 한국 Apple Music 링크를 준다 (밤편지 / 아이유)
+- kr lookup에 없는 곡(측정 23곡 중 2곡)은 us 정보를 그대로 쓴다
+- 해외 곡은 kr에서도 대부분 원어 그대로 오지만, 일부 아티스트는 한글로 온다 (요네즈 켄시, 프랭크 시나트라). Apple Music 한국 앱 표기와 같으므로 그대로 쓴다
+- 검색 한 번에 호출 2번(search + lookup)이다. 호출 제한(IP당 분당 약 20회) 때문에 입력이 멈춘 뒤에만 검색한다
+- 간헐적으로 결과가 0건으로 오는 경우가 있었다 (같은 검색어 재시도 시 정상). 0건이면 한 번 재시도한다
 - 받는 화면은 저장된 곡 ID로 lookup API를 호출해 곡 정보와 미리듣기 URL을 다시 가져온다
 - lookup이 실패하거나 곡이 내려가도 저장해 둔 제목·아티스트로 보여준다. 커버 URL이 죽으면 기본 이미지로 대체한다
 
@@ -80,7 +86,7 @@ type Tape = {
 
 type TrackRef = {
   id: number; // iTunes trackId
-  country: "us" | "jp"; // lookup도 검색한 스토어로 해야 결과가 나온다
+  country: "kr" | "us"; // 곡 정보를 받은 스토어. kr lookup에 없는 곡만 us
   title: string; // lookup이 실패해도 보여줄 정보
   artist: string;
   artworkUrl: string; // iTunes 이미지 URL. 파일을 저장하지 않는다
