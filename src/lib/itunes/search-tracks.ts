@@ -14,11 +14,8 @@ export default async function searchTracks(
   if (!query) return [];
 
   const params = { term: query, country: "us", entity: "song", limit };
-  let found = await itunesRequest("search", params, signal);
-  // 같은 검색어가 간헐적으로 0건으로 오고, 다시 부르면 정상이다
-  if (found.resultCount === 0) {
-    found = await itunesRequest("search", params, signal);
-  }
+  // 간헐적으로 0건이 오지만 재시도하지 않는다. 결과가 실제로 없는 검색어까지 요청이 두 배가 된다
+  const found = await itunesRequest("search", params, signal);
 
   const usTracks = found.results
     .map((item) => toTrack(item, "us"))

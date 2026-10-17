@@ -60,26 +60,11 @@ describe("searchTracks", () => {
     expect(new URL(String(fetchMock.mock.calls[0][0])).searchParams.get("limit")).toBe("15");
   });
 
-  it("검색 결과가 0건이면 한 번 다시 검색한다", async () => {
-    let searches = 0;
-    const fetchMock = mockItunes((url) => {
-      if (url.pathname === "/lookup") return KR;
-      searches += 1;
-      return searches === 1 ? [] : US;
-    });
-
-    const tracks = await searchTracks("Dynamite BTS");
-
-    expect(searches).toBe(2);
-    expect(tracks).toHaveLength(2);
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-  });
-
-  it("다시 검색해도 0건이면 빈 배열이고 lookup은 하지 않는다", async () => {
+  it("검색 결과가 0건이면 다시 검색하지 않고, lookup도 하지 않는다", async () => {
     const fetchMock = mockItunes(() => []);
 
     expect(await searchTracks("竹内まりや")).toEqual([]);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("kr lookup이 실패해도 us 결과를 돌려준다", async () => {
