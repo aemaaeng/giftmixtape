@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import searchTracks from "@/lib/itunes/search-tracks";
@@ -57,6 +57,46 @@ describe("TrackSearch", () => {
     search("밤편지");
 
     expect(await screen.findByText(/검색에 실패했어요/)).toBeInTheDocument();
+  });
+
+  it("먼저 한 검색이 늦게 끝나도 나중 검색의 결과를 덮어쓰지 않는다", async () => {
+    let resolveFirst: (tracks: Track[]) => void = () => {};
+    searchMock
+      .mockReturnValueOnce(new Promise((resolve) => (resolveFirst = resolve)))
+      .mockResolvedValueOnce([{ ...TRACK, id: 2, title: "Ditto" }]);
+    render(<TrackSearch />);
+
+    search("밤편지");
+    search("Ditto");
+    expect(await screen.findByText("Ditto")).toBeInTheDocument();
+
+    await act(async () => resolveFirst([TRACK]));
+
+    expect(screen.getByText("Ditto")).toBeInTheDocument();
+    expect(screen.queryByText("밤편지")).not.toBeInTheDocument();
+  });
+
+  it("같은 검색어로 검색 중이면 다시 제출해도 요청하지 않는다", () => {
+    searchMock.mockReturnValue(new Promise(() => {}));
+    render(<TrackSearch />);
+
+    search("밤편지");
+    search("밤편지");
+
+    expect(searchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("한글 조합 중 Enter는 제출을 막는다", () => {
+    render(<TrackSearch />);
+    const input = screen.getByRole("searchbox");
+
+    const composing = fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+    const safariCommit = fireEvent.keyDown(input, { key: "Enter", keyCode: 229 });
+    const plain = fireEvent.keyDown(input, { key: "Enter", keyCode: 13 });
+
+    expect(composing).toBe(false);
+    expect(safariCommit).toBe(false);
+    expect(plain).toBe(true);
   });
 
   it("빈 검색어는 검색하지 않는다", () => {
