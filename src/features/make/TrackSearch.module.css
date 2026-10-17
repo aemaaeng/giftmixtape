@@ -1,0 +1,38 @@
+.search {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.form {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+}
+
+.list {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.title,
+.meta {
+  margin: 0;
+}
+
+.meta {
+  font-size: 0.875em;
+  opacity: 0.7;
+}
