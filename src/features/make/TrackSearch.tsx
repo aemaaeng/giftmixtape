@@ -16,7 +16,7 @@ type SearchState =
 
 export default function TrackSearch() {
   const [term, setTerm] = useState("");
-  const [state, setState] = useState<SearchState>({ status: "idle" });
+  const [searchState, setSearchState] = useState<SearchState>({ status: "idle" });
   const controllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => () => controllerRef.current?.abort(), []);
@@ -26,21 +26,21 @@ export default function TrackSearch() {
     event.preventDefault();
     const query = term.trim();
     if (!query) return;
-    if (state.status === "loading" && state.query === query) return;
+    if (searchState.status === "loading" && searchState.query === query) return;
 
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
 
-    setState({ status: "loading", query });
+    setSearchState({ status: "loading", query });
     try {
       const tracks = await searchTracks(query, { signal: controller.signal });
       // 취소 직전에 끝난 이전 검색이 새 검색의 상태를 덮어쓰지 않게 한다
       if (controller.signal.aborted) return;
-      setState({ status: "done", tracks });
+      setSearchState({ status: "done", tracks });
     } catch {
       if (controller.signal.aborted) return;
-      setState({ status: "error" });
+      setSearchState({ status: "error" });
     }
   }
 
@@ -69,15 +69,15 @@ export default function TrackSearch() {
       </form>
 
       <div role="status">
-        {state.status === "loading" && <p>검색 중…</p>}
-        {state.status === "error" && <p>검색에 실패했어요. 다시 시도해 주세요.</p>}
-        {state.status === "done" && state.tracks.length === 0 && (
+        {searchState.status === "loading" && <p>검색 중…</p>}
+        {searchState.status === "error" && <p>검색에 실패했어요. 다시 시도해 주세요.</p>}
+        {searchState.status === "done" && searchState.tracks.length === 0 && (
           <p>결과가 없어요. 다시 검색해 보세요.</p>
         )}
       </div>
-      {state.status === "done" && state.tracks.length > 0 && (
+      {searchState.status === "done" && searchState.tracks.length > 0 && (
         <ul className={styles.list}>
-          {state.tracks.map((track) => (
+          {searchState.tracks.map((track) => (
             <li key={track.id} className={styles.item}>
               {/* iTunes CDN 이미지를 그대로 쓴다. next/image 최적화를 거치면 호스팅 서버가 이미지를 다시 받아 변환한다 */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
