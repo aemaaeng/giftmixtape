@@ -1,0 +1,30 @@
+.picked {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.heading {
+  margin: 0 0 8px;
+  font-size: 1em;
+}
+
+.list {
+  margin: 0;
+  padding-left: 1.5em;
+}
+
+.item {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
