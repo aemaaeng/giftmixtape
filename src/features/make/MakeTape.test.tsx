@@ -38,6 +38,10 @@ function pick(title: string) {
   fireEvent.click(screen.getByRole("button", { name: `${title} 담기` }));
 }
 
+function select(title: string) {
+  fireEvent.click(screen.getByRole("button", { name: new RegExp(`^${title} · `) }));
+}
+
 function pickedTitles() {
   const list = within(screen.getByRole("region", { name: /담은 곡/ })).queryAllByRole("listitem");
   return list.map((item) => item.textContent?.split(" · ")[0]);
@@ -64,36 +68,75 @@ describe("MakeTape", () => {
     expect(screen.getByRole("button", { name: "Magnetic 담기" })).toBeDisabled();
   });
 
-  it("뺀 곡은 목록에서 사라지고 다시 담을 수 있다", async () => {
+  it("처음에는 아무 곡도 선택하지 않아 옮기기·빼기를 쓸 수 없다", async () => {
     await searchAll();
     pick("밤편지");
-    pick("Ditto");
 
-    fireEvent.click(screen.getByRole("button", { name: "밤편지 빼기" }));
-
-    expect(pickedTitles()).toEqual(["Ditto"]);
-    expect(screen.getByRole("button", { name: "밤편지 담기" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /^밤편지 · / })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(screen.getByRole("button", { name: "위로" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "아래로" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "빼기" })).toBeDisabled();
   });
 
-  it("위·아래 버튼으로 순서를 바꾼다", async () => {
+  it("선택한 곡을 다시 누르면 선택이 풀린다", async () => {
+    await searchAll();
+    pick("밤편지");
+
+    select("밤편지");
+    expect(screen.getByRole("button", { name: /^밤편지 · / })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    select("밤편지");
+    expect(screen.getByRole("button", { name: /^밤편지 · / })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
+  it("선택한 곡을 위·아래로 옮기고, 옮겨도 선택이 유지된다", async () => {
     await searchAll();
     pick("밤편지");
     pick("Ditto");
     pick("Hype Boy");
 
+    select("Hype Boy");
     fireEvent.click(screen.getByRole("button", { name: "Hype Boy 위로" }));
     expect(pickedTitles()).toEqual(["밤편지", "Hype Boy", "Ditto"]);
+    expect(screen.getByText("Hype Boy: 2번으로 옮겼어요.")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "밤편지 아래로" }));
+    fireEvent.click(screen.getByRole("button", { name: "Hype Boy 위로" }));
     expect(pickedTitles()).toEqual(["Hype Boy", "밤편지", "Ditto"]);
+    expect(screen.getByRole("button", { name: "Hype Boy 위로" })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Hype Boy 아래로" }));
+    expect(pickedTitles()).toEqual(["밤편지", "Hype Boy", "Ditto"]);
   });
 
-  it("맨 위 곡은 위로, 맨 아래 곡은 아래로 옮길 수 없다", async () => {
+  it("맨 아래 곡은 아래로 옮길 수 없다", async () => {
     await searchAll();
     pick("밤편지");
     pick("Ditto");
 
-    expect(screen.getByRole("button", { name: "밤편지 위로" })).toBeDisabled();
+    select("Ditto");
+
     expect(screen.getByRole("button", { name: "Ditto 아래로" })).toBeDisabled();
+  });
+
+  it("선택한 곡을 빼면 목록에서 사라지고 선택이 풀리며 다시 담을 수 있다", async () => {
+    await searchAll();
+    pick("밤편지");
+    pick("Ditto");
+
+    select("밤편지");
+    fireEvent.click(screen.getByRole("button", { name: "밤편지 빼기" }));
+
+    expect(pickedTitles()).toEqual(["Ditto"]);
+    expect(screen.getByRole("button", { name: "빼기" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "밤편지 담기" })).toBeEnabled();
   });
 });
