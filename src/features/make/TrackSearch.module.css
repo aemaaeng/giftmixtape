@@ -27,6 +27,11 @@
   padding: 8px 0;
 }
 
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
 .title,
 .meta {
   margin: 0;

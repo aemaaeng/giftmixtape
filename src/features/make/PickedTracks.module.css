@@ -1,0 +1,46 @@
+.picked {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.heading {
+  margin: 0 0 8px;
+  font-size: 1em;
+}
+
+.announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.list {
+  margin: 0;
+  padding-left: 1.5em;
+}
+
+.track {
+  display: block;
+  width: 100%;
+  padding: 4px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: none;
+  border: 1px solid transparent;
+}
+
+.track[aria-pressed="true"] {
+  border-color: currentColor;
+}
+
+.controls {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
