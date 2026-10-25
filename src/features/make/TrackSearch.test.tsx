@@ -24,6 +24,12 @@ const TRACK: Track = {
   appleMusicUrl: "https://music.apple.com/kr/song/1",
 };
 
+function renderSearch(props: Partial<React.ComponentProps<typeof TrackSearch>> = {}) {
+  const onPick = vi.fn();
+  render(<TrackSearch pickedIds={[]} isFull={false} onPick={onPick} {...props} />);
+  return { onPick };
+}
+
 function search(term: string) {
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: term } });
   fireEvent.submit(screen.getByRole("search"));
@@ -32,7 +38,7 @@ function search(term: string) {
 describe("TrackSearch", () => {
   it("제출하면 검색하고 결과를 보여준다", async () => {
     searchMock.mockResolvedValue([TRACK]);
-    render(<TrackSearch />);
+    renderSearch();
 
     search("밤편지");
 
@@ -43,7 +49,7 @@ describe("TrackSearch", () => {
 
   it("결과가 0건이면 다시 검색하라고 안내한다", async () => {
     searchMock.mockResolvedValue([]);
-    render(<TrackSearch />);
+    renderSearch();
 
     search("없는 곡");
 
@@ -52,7 +58,7 @@ describe("TrackSearch", () => {
 
   it("검색이 실패하면 에러를 보여준다", async () => {
     searchMock.mockRejectedValue(new Error("503"));
-    render(<TrackSearch />);
+    renderSearch();
 
     search("밤편지");
 
@@ -64,7 +70,7 @@ describe("TrackSearch", () => {
     searchMock
       .mockReturnValueOnce(new Promise((resolve) => (resolveFirst = resolve)))
       .mockResolvedValueOnce([{ ...TRACK, id: 2, title: "Ditto" }]);
-    render(<TrackSearch />);
+    renderSearch();
 
     search("밤편지");
     search("Ditto");
@@ -78,7 +84,7 @@ describe("TrackSearch", () => {
 
   it("같은 검색어로 검색 중이면 다시 제출해도 요청하지 않는다", () => {
     searchMock.mockReturnValue(new Promise(() => {}));
-    render(<TrackSearch />);
+    renderSearch();
 
     search("밤편지");
     search("밤편지");
@@ -87,7 +93,7 @@ describe("TrackSearch", () => {
   });
 
   it("한글 조합 중 Enter는 제출을 막는다", () => {
-    render(<TrackSearch />);
+    renderSearch();
     const input = screen.getByRole("searchbox");
 
     const composing = fireEvent.keyDown(input, { key: "Enter", isComposing: true });
@@ -99,8 +105,42 @@ describe("TrackSearch", () => {
     expect(plain).toBe(true);
   });
 
+  it("담기를 누르면 곡을 넘긴다", async () => {
+    searchMock.mockResolvedValue([TRACK]);
+    const { onPick } = renderSearch();
+
+    search("밤편지");
+    fireEvent.click(await screen.findByRole("button", { name: "밤편지 담기" }));
+
+    expect(onPick).toHaveBeenCalledWith(TRACK);
+  });
+
+  it("이미 담은 곡은 담음으로 표시하고 다시 담을 수 없다", async () => {
+    searchMock.mockResolvedValue([TRACK]);
+    const { onPick } = renderSearch({ pickedIds: [TRACK.id] });
+
+    search("밤편지");
+    const button = await screen.findByRole("button", { name: "밤편지 담음" });
+    fireEvent.click(button);
+
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(onPick).not.toHaveBeenCalled();
+  });
+
+  it("5곡을 다 담았으면 담기를 막는다", async () => {
+    searchMock.mockResolvedValue([TRACK]);
+    const { onPick } = renderSearch({ isFull: true });
+
+    search("밤편지");
+    const button = await screen.findByRole("button", { name: "밤편지 담기" });
+    fireEvent.click(button);
+
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(onPick).not.toHaveBeenCalled();
+  });
+
   it("빈 검색어는 검색하지 않는다", () => {
-    render(<TrackSearch />);
+    renderSearch();
 
     search("   ");
 

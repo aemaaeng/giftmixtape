@@ -1,10 +1,10 @@
-import TrackSearch from "@/features/make/TrackSearch";
+import MakeTape from "@/features/make/MakeTape";
 
 export default function Home() {
   return (
     <main>
       <h1>giftmixtape</h1>
-      <TrackSearch />
+      <MakeTape />
     </main>
   );
 }
