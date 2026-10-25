@@ -7,3 +7,8 @@
 body {
   margin: 0;
 }
+
+/* 모달 dialog는 뒤 페이지 스크롤을 막지 않는다. 시트를 스크롤하다 뒤 화면이 따라 움직이지 않게 한다 */
+html:has(dialog[open]) {
+  overflow: hidden;
+}

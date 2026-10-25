@@ -1,0 +1,62 @@
+.sheet {
+  width: 100%;
+  max-width: 480px;
+  height: calc(100dvh - 48px);
+  max-height: none;
+  margin: auto auto 0;
+  padding: 0;
+  border: none;
+  border-radius: 12px 12px 0 0;
+}
+
+.sheet[open] {
+  animation: rise 0.25s ease-out;
+}
+
+.sheet::backdrop {
+  background: rgb(0 0 0 / 40%);
+}
+
+/* 바깥을 누를 때만 dialog 자신이 이벤트 대상이 되도록 안쪽을 꽉 채운다 */
+.body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 0;
+}
+
+.heading {
+  margin: 0;
+  font-size: 1em;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.status {
+  min-height: 1.5em;
+  margin: 0;
+  padding: 8px 16px 16px;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet[open] {
+    animation: none;
+  }
+}
