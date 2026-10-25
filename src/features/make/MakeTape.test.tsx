@@ -29,9 +29,18 @@ const TRACKS: Track[] = ["밤편지", "Ditto", "Hype Boy", "OMG", "Supernova", "
 async function searchAll() {
   searchMock.mockResolvedValue(TRACKS);
   render(<MakeTape />);
+  openSheet();
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "노래" } });
   fireEvent.submit(screen.getByRole("search"));
   await screen.findByRole("button", { name: "밤편지 담기" });
+}
+
+function openSheet() {
+  fireEvent.click(screen.getAllByRole("button", { name: /번 칸에 곡 담기$/ })[0]);
+}
+
+function closeSheet() {
+  fireEvent.click(screen.getByRole("button", { name: "닫기" }));
 }
 
 function pick(title: string) {
@@ -44,7 +53,10 @@ function select(title: string) {
 
 function pickedTitles() {
   const list = within(screen.getByRole("region", { name: /담은 곡/ })).queryAllByRole("listitem");
-  return list.map((item) => item.textContent?.split(" · ")[0]);
+  return list
+    .map((item) => item.textContent ?? "")
+    .filter((text) => text.includes(" · "))
+    .map((text) => text.split(" · ")[0]);
 }
 
 describe("MakeTape", () => {
@@ -62,21 +74,58 @@ describe("MakeTape", () => {
     );
   });
 
-  it("5곡을 담으면 나머지 곡은 담을 수 없다", async () => {
+  it("시트를 띄운 채로 연달아 담고, 담을 때마다 남은 곡 수를 알린다", async () => {
+    await searchAll();
+
+    pick("밤편지");
+    pick("Ditto");
+
+    expect(screen.getByRole("dialog", { name: "곡 담기 2/5" })).toBeInTheDocument();
+    expect(screen.getByText("Ditto: 담았어요. 3곡 남았어요.")).toBeInTheDocument();
+  });
+
+  it("5곡을 담으면 시트가 닫히고 담은 곡 제목으로 포커스가 간다", async () => {
     await searchAll();
 
     ["밤편지", "Ditto", "Hype Boy", "OMG", "Supernova"].forEach(pick);
 
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByText("5곡을 다 담았어요.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Magnetic 담기" })).toHaveAttribute(
-      "aria-disabled",
-      "true",
-    );
+    expect(screen.queryByRole("button", { name: /번 칸에 곡 담기$/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "담은 곡 5/5" })).toHaveFocus();
+  });
+
+  it("빈 칸을 누르면 시트가 열리고 검색창에 포커스가 간다", () => {
+    render(<MakeTape />);
+
+    expect(screen.getAllByRole("button", { name: /번 칸에 곡 담기$/ })).toHaveLength(5);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    openSheet();
+
+    expect(screen.getByRole("dialog", { name: "곡 담기 0/5" })).toBeInTheDocument();
+    expect(screen.getByRole("searchbox")).toHaveFocus();
+  });
+
+  it("닫으면 남은 빈 칸으로 포커스가 가고, 다시 열면 검색 결과가 남아 있다", async () => {
+    await searchAll();
+    pick("밤편지");
+
+    closeSheet();
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "2번 칸에 곡 담기" })).toHaveFocus();
+
+    openSheet();
+
+    expect(screen.getByRole("button", { name: "Ditto 담기" })).toBeInTheDocument();
+    expect(searchMock).toHaveBeenCalledTimes(1);
   });
 
   it("처음에는 아무 곡도 선택하지 않아 옮기기·빼기를 쓸 수 없다", async () => {
     await searchAll();
     pick("밤편지");
+    closeSheet();
 
     expect(screen.getByRole("button", { name: /^밤편지 · / })).toHaveAttribute(
       "aria-pressed",
@@ -90,6 +139,7 @@ describe("MakeTape", () => {
   it("선택한 곡을 다시 누르면 선택이 풀린다", async () => {
     await searchAll();
     pick("밤편지");
+    closeSheet();
 
     select("밤편지");
     expect(screen.getByRole("button", { name: /^밤편지 · / })).toHaveAttribute(
@@ -109,6 +159,7 @@ describe("MakeTape", () => {
     pick("밤편지");
     pick("Ditto");
     pick("Hype Boy");
+    closeSheet();
 
     select("Hype Boy");
     fireEvent.click(screen.getByRole("button", { name: "Hype Boy 위로" }));
@@ -134,6 +185,7 @@ describe("MakeTape", () => {
     await searchAll();
     pick("밤편지");
     pick("Ditto");
+    closeSheet();
 
     select("Ditto");
     fireEvent.click(screen.getByRole("button", { name: "Ditto 아래로" }));
@@ -149,15 +201,30 @@ describe("MakeTape", () => {
     await searchAll();
     pick("밤편지");
     pick("Ditto");
+    closeSheet();
 
     select("밤편지");
     fireEvent.click(screen.getByRole("button", { name: "밤편지 빼기" }));
 
     expect(pickedTitles()).toEqual(["Ditto"]);
     expect(screen.getByRole("button", { name: "빼기" })).toHaveAttribute("aria-disabled", "true");
+    openSheet();
     expect(screen.getByRole("button", { name: "밤편지 담기" })).toHaveAttribute(
       "aria-disabled",
       "false",
     );
+  });
+
+  it("곡이 하나도 없어도 옮기기·빼기 버튼은 남아 있다", async () => {
+    await searchAll();
+    pick("밤편지");
+    closeSheet();
+
+    select("밤편지");
+    fireEvent.click(screen.getByRole("button", { name: "밤편지 빼기" }));
+
+    expect(pickedTitles()).toEqual([]);
+    expect(screen.getByRole("button", { name: "빼기" })).toBeInTheDocument();
+    expect(screen.getByText("빈 칸을 눌러 곡을 담아 보세요.")).toBeInTheDocument();
   });
 });
