@@ -117,20 +117,26 @@ describe("TrackSearch", () => {
 
   it("이미 담은 곡은 담음으로 표시하고 다시 담을 수 없다", async () => {
     searchMock.mockResolvedValue([TRACK]);
-    renderSearch({ pickedIds: [TRACK.id] });
+    const { onPick } = renderSearch({ pickedIds: [TRACK.id] });
 
     search("밤편지");
+    const button = await screen.findByRole("button", { name: "밤편지 담음" });
+    fireEvent.click(button);
 
-    expect(await screen.findByRole("button", { name: "밤편지 담음" })).toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(onPick).not.toHaveBeenCalled();
   });
 
   it("5곡을 다 담았으면 담기를 막는다", async () => {
     searchMock.mockResolvedValue([TRACK]);
-    renderSearch({ isFull: true });
+    const { onPick } = renderSearch({ isFull: true });
 
     search("밤편지");
+    const button = await screen.findByRole("button", { name: "밤편지 담기" });
+    fireEvent.click(button);
 
-    expect(await screen.findByRole("button", { name: "밤편지 담기" })).toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(onPick).not.toHaveBeenCalled();
   });
 
   it("빈 검색어는 검색하지 않는다", () => {

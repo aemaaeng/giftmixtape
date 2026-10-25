@@ -85,6 +85,7 @@ export default function TrackSearch({ pickedIds, isFull, onPick }: TrackSearchPr
         <ul className={styles.list}>
           {searchState.tracks.map((track) => {
             const isPicked = pickedIds.includes(track.id);
+            const canPick = !isPicked && !isFull;
             return (
               <li key={track.id} className={styles.item}>
                 {/* iTunes CDN 이미지를 그대로 쓴다. next/image 최적화를 거치면 호스팅 서버가 이미지를 다시 받아 변환한다 */}
@@ -96,10 +97,11 @@ export default function TrackSearch({ pickedIds, isFull, onPick }: TrackSearchPr
                     {track.artist} · {track.album}
                   </p>
                 </div>
+                {/* 담으면 이 버튼이 바로 막힌다. disabled로 막으면 포커스가 빠져나가서 aria-disabled로 표시만 한다 */}
                 <button
                   type="button"
-                  onClick={() => onPick(track)}
-                  disabled={isPicked || isFull}
+                  onClick={() => canPick && onPick(track)}
+                  aria-disabled={!canPick}
                   aria-label={`${track.title} ${isPicked ? "담음" : "담기"}`}
                 >
                   {isPicked ? "담음" : "담기"}

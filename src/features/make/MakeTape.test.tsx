@@ -56,7 +56,10 @@ describe("MakeTape", () => {
 
     expect(pickedTitles()).toEqual(["밤편지", "Ditto"]);
     expect(screen.getByRole("heading", { name: "담은 곡 2/5" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "밤편지 담음" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "밤편지 담음" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
   });
 
   it("5곡을 담으면 나머지 곡은 담을 수 없다", async () => {
@@ -65,7 +68,10 @@ describe("MakeTape", () => {
     ["밤편지", "Ditto", "Hype Boy", "OMG", "Supernova"].forEach(pick);
 
     expect(screen.getByText("5곡을 다 담았어요.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Magnetic 담기" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Magnetic 담기" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
   });
 
   it("처음에는 아무 곡도 선택하지 않아 옮기기·빼기를 쓸 수 없다", async () => {
@@ -76,9 +82,9 @@ describe("MakeTape", () => {
       "aria-pressed",
       "false",
     );
-    expect(screen.getByRole("button", { name: "위로" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "아래로" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "빼기" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "위로" })).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: "아래로" })).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: "빼기" })).toHaveAttribute("aria-disabled", "true");
   });
 
   it("선택한 곡을 다시 누르면 선택이 풀린다", async () => {
@@ -111,7 +117,14 @@ describe("MakeTape", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Hype Boy 위로" }));
     expect(pickedTitles()).toEqual(["Hype Boy", "밤편지", "Ditto"]);
-    expect(screen.getByRole("button", { name: "Hype Boy 위로" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hype Boy 위로" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+
+    // 막힌 버튼을 눌러도 순서는 그대로다
+    fireEvent.click(screen.getByRole("button", { name: "Hype Boy 위로" }));
+    expect(pickedTitles()).toEqual(["Hype Boy", "밤편지", "Ditto"]);
 
     fireEvent.click(screen.getByRole("button", { name: "Hype Boy 아래로" }));
     expect(pickedTitles()).toEqual(["밤편지", "Hype Boy", "Ditto"]);
@@ -123,8 +136,13 @@ describe("MakeTape", () => {
     pick("Ditto");
 
     select("Ditto");
+    fireEvent.click(screen.getByRole("button", { name: "Ditto 아래로" }));
 
-    expect(screen.getByRole("button", { name: "Ditto 아래로" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Ditto 아래로" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+    expect(pickedTitles()).toEqual(["밤편지", "Ditto"]);
   });
 
   it("선택한 곡을 빼면 목록에서 사라지고 선택이 풀리며 다시 담을 수 있다", async () => {
@@ -136,7 +154,10 @@ describe("MakeTape", () => {
     fireEvent.click(screen.getByRole("button", { name: "밤편지 빼기" }));
 
     expect(pickedTitles()).toEqual(["Ditto"]);
-    expect(screen.getByRole("button", { name: "빼기" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "밤편지 담기" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "빼기" })).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: "밤편지 담기" })).toHaveAttribute(
+      "aria-disabled",
+      "false",
+    );
   });
 });

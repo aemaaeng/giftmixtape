@@ -22,8 +22,13 @@ export default function PickedTracks({ tracks, onRemove, onMove }: PickedTracksP
   const selectedIndex = tracks.findIndex((track) => track.id === selectedId);
   const selected = selectedIndex === -1 ? null : tracks[selectedIndex];
 
+  const canMoveUp = selected !== null && selectedIndex > 0;
+  const canMoveDown = selected !== null && selectedIndex < tracks.length - 1;
+
+  // 버튼을 disabled로 바꾸면 누른 버튼에서 포커스가 빠져나간다
+  // aria-disabled로 표시만 하고 누르면 여기서 무시한다
   function move(to: number) {
-    if (!selected) return;
+    if (!selected || to < 0 || to >= tracks.length) return;
     onMove(selectedIndex, to);
     setAnnouncement(`${selected.title}: ${to + 1}번으로 옮겼어요.`);
   }
@@ -65,7 +70,7 @@ export default function PickedTracks({ tracks, onRemove, onMove }: PickedTracksP
             <button
               type="button"
               onClick={() => move(selectedIndex - 1)}
-              disabled={!selected || selectedIndex === 0}
+              aria-disabled={!canMoveUp}
               aria-label={selected ? `${selected.title} 위로` : "위로"}
             >
               ▲
@@ -73,7 +78,7 @@ export default function PickedTracks({ tracks, onRemove, onMove }: PickedTracksP
             <button
               type="button"
               onClick={() => move(selectedIndex + 1)}
-              disabled={!selected || selectedIndex === tracks.length - 1}
+              aria-disabled={!canMoveDown}
               aria-label={selected ? `${selected.title} 아래로` : "아래로"}
             >
               ▼
@@ -81,7 +86,7 @@ export default function PickedTracks({ tracks, onRemove, onMove }: PickedTracksP
             <button
               type="button"
               onClick={remove}
-              disabled={!selected}
+              aria-disabled={!selected}
               aria-label={selected ? `${selected.title} 빼기` : "빼기"}
             >
               ⏏ 빼기
