@@ -111,6 +111,10 @@ export default function TrackSearch({ pickedIds, isFull, onPick }: TrackSearchPr
           })}
         </ul>
       )}
+      {/* 검색 API에 다음 페이지가 없어서 더 불러오기 대신 검색어를 바꾸도록 안내한다 */}
+      {searchState.status === "done" && searchState.tracks.length > 0 && (
+        <p className={styles.hint}>찾는 곡이 없으면 가수 이름과 같이 검색해 보세요.</p>
+      )}
     </section>
   );
 }

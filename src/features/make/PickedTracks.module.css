@@ -9,6 +9,10 @@
   font-size: 1em;
 }
 
+.heading:focus {
+  outline: none;
+}
+
 .announcement {
   position: absolute;
   width: 1px;
@@ -33,6 +37,16 @@
   white-space: nowrap;
   background: none;
   border: 1px solid transparent;
+}
+
+.empty {
+  display: block;
+  width: 100%;
+  padding: 4px;
+  text-align: left;
+  background: none;
+  border: 1px dashed currentColor;
+  opacity: 0.6;
 }
 
 .track[aria-pressed="true"] {
